@@ -945,52 +945,6 @@ body.es-admin .admin-only{display:block;}
         <button onclick="abrirPolla()" style="width:100%;padding:16px;background:linear-gradient(135deg,var(--oro),#FFA500);border:none;border-radius:14px;color:var(--azul);font-family:'Nunito',sans-serif;font-size:18px;font-weight:900;cursor:pointer;">🎫 ABRIR POLLA DE CLASIFICADOS</button>
       </div>
 
-      <!-- PANEL DE ESTADO API (solo admin) -->
-      <div class="api-panel admin-only" id="apiPanel">
-        <div class="api-panel-header">
-          <div class="api-panel-titulo">📡 Marcadores Automáticos</div>
-          <div class="api-estado-luz" id="apiEstadoLuz">
-            <span class="luz-dot" id="luzDot"></span>
-            <span id="luzTexto">Sin conectar</span>
-          </div>
-        </div>
-
-        <input class="api-key-input" id="apiKeyInput" type="password" placeholder="Pega aquí tu API Key" oninput="guardarApiKey()">
-
-        <div class="api-botones">
-          <button class="btn-api btn-api-test" onclick="probarAPI()">🔍 Probar conexión</button>
-          <button class="btn-api btn-api-sync" onclick="sincronizarAhora()">🔄 Actualizar ahora</button>
-        </div>
-
-        <!-- TARJETA DE ESTADO DETALLADO -->
-        <div class="api-detalle" id="apiDetalle">
-          <div class="api-detalle-fila">
-            <span class="api-det-label">Estado</span>
-            <span class="api-det-val" id="detEstado">⚪ Sin conectar</span>
-          </div>
-          <div class="api-detalle-fila">
-            <span class="api-det-label">Plan</span>
-            <span class="api-det-val" id="detPlan">—</span>
-          </div>
-          <div class="api-detalle-fila">
-            <span class="api-det-label">Peticiones restantes hoy</span>
-            <span class="api-det-val" id="detPeticiones">—</span>
-          </div>
-          <div class="api-detalle-fila">
-            <span class="api-det-label">Última actualización</span>
-            <span class="api-det-val" id="detUltimaSync">Nunca</span>
-          </div>
-          <div class="api-detalle-fila">
-            <span class="api-det-label">Auto-actualización</span>
-            <span class="api-det-val" id="detAutoSync">Desactivada</span>
-          </div>
-        </div>
-
-        <div class="api-nota">
-          💡 <strong>Antes del 11 de junio</strong> la API solo tiene el calendario (no hay partidos aún). Cuando empiece el Mundial, los goles se actualizarán solos cada minuto. Consigue tu clave gratis en <strong>dashboard.api-football.com</strong>
-        </div>
-      </div>
-
       <!-- RANKING GENERAL -->
       <div class="ranking-card" id="rankingCard">
         <div class="ranking-cab"><h3>🏆 Ranking General</h3></div>
@@ -2570,6 +2524,9 @@ function abrirPolla(){
   }
   const totalEl=document.querySelector('#pll_contActual + .total');
   if(totalEl) totalEl.textContent='/'+PLL_TOPE_TOTAL;
+  // Texto inicial del botón confirmar
+  const btnC=document.getElementById('pll_btnConfirmar');
+  if(btnC){ btnC.className='btn-confirmar no-listo'; btnC.textContent=`Completa los ${PLL_TOPE_TOTAL} equipos`; }
   // Reset a pantalla de ingreso
   pllMostrarPantalla('ingreso');
   window.scrollTo(0,0);
@@ -2786,7 +2743,7 @@ function pllToggleEquipo(grupo,equipo){
       return;
     }
     if(totalActual>=PLL_TOPE_TOTAL){
-      pllToast('Ya completaste los 32 equipos. Quita uno para cambiar.');
+      pllToast(`Ya completaste los ${PLL_TOPE_TOTAL} equipos. Quita uno para cambiar.`);
       return;
     }
     sel.push(equipo);
@@ -2837,7 +2794,7 @@ function pllAbrirResumen(){
   const total=Object.values(pllSeleccion).reduce((s,a)=>s+a.length,0);
   const todosMin=Object.values(pllSeleccion).every(a=>a.length>=PLL_MIN_POR_GRUPO);
   if(total!==PLL_TOPE_TOTAL||!todosMin){
-    pllToast('Completa correctamente los 32 equipos primero');
+    pllToast(`Completa correctamente los ${PLL_TOPE_TOTAL} equipos primero`);
     return;
   }
   const cont=document.getElementById('pll_resumenContainer');
@@ -2976,6 +2933,11 @@ function admTab(tab,btn){
   if(tab==='clientes') admRenderClientes();
   if(tab==='apuestas') admRenderApuestas();
   if(tab==='config') admCargarConfigEnUI();
+  if(tab==='api'){
+    const el=document.getElementById('apiKeyInput');
+    if(el) el.value = apiKey||'';
+    if(typeof pintarPanelAPI==='function') pintarPanelAPI();
+  }
 }
 
 // ── CARGAR EXCEL ──────────────────────────────────────────────
@@ -3178,6 +3140,48 @@ function admCargarConfigEnUI(){
   document.getElementById('admCfgMin').value = PLL_MIN_POR_GRUPO;
   document.getElementById('admCfgMax').value = PLL_MAX_POR_GRUPO;
 }
+
+// ── USUARIOS DE PRUEBA ────────────────────────────────────────
+const PRUEBA_NOMBRES=['Juan Pérez','Ana Gómez','Pedro Ruiz','María López','Carlos Díaz','Laura Torres','Diego Mora','Sofía Ríos','Andrés Vega','Camila Soto'];
+const PRUEBA_OFICINAS=['Florencia','El Paujil','El Doncello','Cartagena del Chairá'];
+
+async function admCrearUsuarioPrueba(){
+  const msg=document.getElementById('admPruebaMsg');
+  const ced='TEST'+Math.floor(1000+Math.random()*9000);
+  const nombre=PRUEBA_NOMBRES[Math.floor(Math.random()*PRUEBA_NOMBRES.length)];
+  const oficina=PRUEBA_OFICINAS[Math.floor(Math.random()*PRUEBA_OFICINAS.length)];
+  const cliente={
+    cedula:ced, nombre:nombre+' (prueba)', telefono:'300'+Math.floor(1000000+Math.random()*8999999),
+    factura:'TEST-'+Math.floor(Math.random()*999), valor:String(Math.floor(20+Math.random()*60)*1000),
+    oficina:oficina, activa:true, yaAposto:false, prediccion:null, esPrueba:true,
+    actualizado:new Date().toISOString()
+  };
+  const ok=await guardarClienteFB(cliente);
+  if(ok){
+    pllClientesDemo[ced]=cliente;
+    msg.className='adm-msg ok';
+    msg.innerHTML=`✅ Usuario creado: <strong>${cliente.nombre}</strong><br>Cédula: <strong>${ced}</strong> · Oficina: ${oficina}`;
+    admRenderClientes();
+  } else {
+    msg.className='adm-msg error'; msg.textContent='❌ Error al crear (revisa conexión)';
+  }
+}
+
+async function admBorrarUsuariosPrueba(){
+  const msg=document.getElementById('admPruebaMsg');
+  const pruebas=Object.values(pllClientesDemo).filter(c=>c.esPrueba || String(c.cedula).startsWith('TEST'));
+  if(!pruebas.length){ msg.className='adm-msg ok'; msg.textContent='No hay usuarios de prueba para borrar.'; return; }
+  if(!confirm(`¿Borrar ${pruebas.length} usuarios de prueba? Esta acción no se puede deshacer.`)) return;
+  msg.className='adm-msg ok'; msg.textContent='⏳ Borrando...';
+  let borrados=0;
+  for(const c of pruebas){
+    try{ await db.collection('clientes').doc(c.cedula).delete(); delete pllClientesDemo[c.cedula]; borrados++; }
+    catch(e){ console.error('Error borrando',c.cedula,e); }
+  }
+  msg.className='adm-msg ok';
+  msg.innerHTML=`✅ ${borrados} usuarios de prueba borrados.`;
+  admRenderClientes();
+}
 async function admGuardarConfigPolla(){
   const msg = document.getElementById('admConfigMsg');
   const tope = parseInt(document.getElementById('admCfgTope').value)||32;
@@ -3311,7 +3315,7 @@ cargarPolla();
 
     <div class="confirmar-zona">
       <button class="btn-confirmar no-listo" id="pll_btnConfirmar" onclick="pllAbrirResumen()">
-        Completa los 32 equipos
+        Completa tu predicción
       </button>
     </div>
   </div>
@@ -3383,6 +3387,7 @@ cargarPolla();
   <div class="adm-main" id="admPanel" style="display:none">
     <div class="adm-tabs">
       <button class="adm-tab activo" onclick="admTab('cargar',this)">📤 Cargar Excel</button>
+      <button class="adm-tab" onclick="admTab('api',this)">📡 Marcadores API</button>
       <button class="adm-tab" onclick="admTab('config',this)">⚙️ Config Polla</button>
       <button class="adm-tab" onclick="admTab('clientes',this)">👥 Clientes</button>
       <button class="adm-tab" onclick="admTab('apuestas',this)">🎫 Apuestas</button>
@@ -3422,6 +3427,61 @@ cargarPolla();
       </div>
     </div>
 
+    <!-- MARCADORES API -->
+    <div class="adm-seccion" id="admSec-api">
+      <div class="adm-card">
+        <h3>📡 Marcadores Automáticos (API-Football)</h3>
+        <p>Pega aquí tu API Key de <strong>dashboard.api-football.com</strong>. Con esto los goles de los partidos se actualizan solos. Los clientes solo ven los marcadores, no esta configuración.</p>
+      </div>
+      <!-- PANEL DE ESTADO API (solo admin) -->
+      <div class="api-panel" id="apiPanel">
+        <div class="api-panel-header">
+          <div class="api-panel-titulo">📡 Marcadores Automáticos</div>
+          <div class="api-estado-luz" id="apiEstadoLuz">
+            <span class="luz-dot" id="luzDot"></span>
+            <span id="luzTexto">Sin conectar</span>
+          </div>
+        </div>
+
+        <input class="api-key-input" id="apiKeyInput" type="password" placeholder="Pega aquí tu API Key" oninput="guardarApiKey()">
+
+        <div class="api-botones">
+          <button class="btn-api btn-api-test" onclick="probarAPI()">🔍 Probar conexión</button>
+          <button class="btn-api btn-api-sync" onclick="sincronizarAhora()">🔄 Actualizar ahora</button>
+        </div>
+
+        <!-- TARJETA DE ESTADO DETALLADO -->
+        <div class="api-detalle" id="apiDetalle">
+          <div class="api-detalle-fila">
+            <span class="api-det-label">Estado</span>
+            <span class="api-det-val" id="detEstado">⚪ Sin conectar</span>
+          </div>
+          <div class="api-detalle-fila">
+            <span class="api-det-label">Plan</span>
+            <span class="api-det-val" id="detPlan">—</span>
+          </div>
+          <div class="api-detalle-fila">
+            <span class="api-det-label">Peticiones restantes hoy</span>
+            <span class="api-det-val" id="detPeticiones">—</span>
+          </div>
+          <div class="api-detalle-fila">
+            <span class="api-det-label">Última actualización</span>
+            <span class="api-det-val" id="detUltimaSync">Nunca</span>
+          </div>
+          <div class="api-detalle-fila">
+            <span class="api-det-label">Auto-actualización</span>
+            <span class="api-det-val" id="detAutoSync">Desactivada</span>
+          </div>
+        </div>
+
+        <div class="api-nota">
+          💡 <strong>Antes del 11 de junio</strong> la API solo tiene el calendario (no hay partidos aún). Cuando empiece el Mundial, los goles se actualizarán solos cada minuto. Consigue tu clave gratis en <strong>dashboard.api-football.com</strong>
+        </div>
+      </div>
+
+
+    </div>
+
     <!-- CONFIG POLLA -->
     <div class="adm-seccion" id="admSec-config">
       <div class="adm-card">
@@ -3458,6 +3518,15 @@ cargarPolla();
       <div class="adm-stat-grid">
         <div class="adm-stat"><div class="adm-stat-n" id="admTotalClientes">0</div><div class="adm-stat-l">Clientes activos</div></div>
         <div class="adm-stat"><div class="adm-stat-n" id="admTotalApostaron">0</div><div class="adm-stat-l">Ya apostaron</div></div>
+      </div>
+      <div class="adm-card" style="padding:14px;margin-bottom:12px">
+        <h3 style="font-size:15px;margin-bottom:8px">🧪 Usuarios de prueba</h3>
+        <p style="font-size:13px;margin-bottom:10px">Crea usuarios falsos para probar la polla, o bórralos todos cuando termines.</p>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn-api btn-api-test" style="flex:1;min-width:140px" onclick="admCrearUsuarioPrueba()">➕ Crear usuario de prueba</button>
+          <button class="btn-api" style="flex:1;min-width:140px;background:rgba(232,0,29,.12);border:2px solid rgba(232,0,29,.3);color:#FF6B6B" onclick="admBorrarUsuariosPrueba()">🗑️ Borrar todos los de prueba</button>
+        </div>
+        <div class="adm-msg" id="admPruebaMsg"></div>
       </div>
       <input class="adm-buscar" id="admBuscarCliente" placeholder="🔍 Buscar por cédula o nombre" oninput="admRenderClientes()">
       <div class="adm-card" style="padding:12px">
