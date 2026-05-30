@@ -249,15 +249,18 @@ tbody td{padding:9px 10px;font-size:13px;font-weight:700;}
 .apuestas-config{background:var(--tarjeta);border:2px solid rgba(255,215,0,.2);border-radius:16px;padding:16px;margin-bottom:14px;}
 .admin-only{display:none;}
 body.es-admin .admin-only{display:block;}
+.admin-banner{background:linear-gradient(90deg,#FFD700,#FFA500);color:#001;font-size:12px;font-weight:800;text-align:center;padding:8px 12px;cursor:pointer;position:sticky;top:0;z-index:90;line-height:1.4;}
 
 /* ── BALONES FLOTANTES DE FONDO (animación en todas las páginas) ── */
 .balones-fondo{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden;}
-.balon-flota{position:absolute;font-size:28px;opacity:.07;animation:balonSube linear infinite;will-change:transform;}
+.balon-flota{position:absolute;animation:balonSube linear infinite;will-change:transform;}
 @keyframes balonSube{
-  0%{transform:translateY(110vh) rotate(0deg);}
-  100%{transform:translateY(-15vh) rotate(360deg);}
+  0%{transform:translateY(112vh) rotate(0deg);opacity:0;}
+  8%{opacity:.16;}
+  92%{opacity:.16;}
+  100%{transform:translateY(-15vh) rotate(540deg);opacity:0;}
 }
-.cabecera, .nav-bottom, .pagina{position:relative;z-index:1;}
+.cabecera, .pagina{position:relative;z-index:1;}
 .apuestas-config h3{font-size:18px;font-weight:900;color:var(--oro);margin-bottom:12px;}
 .config-fila{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;}
 .config-item label{font-size:12px;font-weight:800;color:var(--gris);letter-spacing:1px;display:block;margin-bottom:5px;text-transform:uppercase;}
@@ -866,6 +869,7 @@ body.es-admin .admin-only{display:block;}
 <div id="app">
   <div class="bg-fondo"></div>
   <div class="balones-fondo" id="balonesFondo" aria-hidden="true"></div>
+  <div class="admin-banner admin-only" onclick="abrirAdmin()">🔧 MODO ADMINISTRADOR ACTIVO · toca aquí para gestionar · cierra el panel con ✕ para volver a vista cliente</div>
   <div class="cabecera">
     <div class="cab-logo">
       <span class="cab-trofeo">🏆</span>
@@ -2949,6 +2953,7 @@ function abrirAdmin(){
 }
 function cerrarAdmin(){
   document.getElementById('adminApp').classList.remove('activo');
+  desactivarAdminMode();
 }
 function admLogin(){
   const pass=document.getElementById('admPass').value.trim();
