@@ -14,36 +14,51 @@ html,body{font-family:'Nunito',sans-serif;background:var(--fondo);color:var(--bl
 #intro{position:fixed;inset:0;background:linear-gradient(160deg,#03091A,#001F5B,#03091A);z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;text-align:center;overflow:hidden;}
 .intro-glow{position:absolute;width:600px;height:600px;background:radial-gradient(ellipse,rgba(0,194,255,.1),transparent 70%);animation:glow 3s ease-in-out infinite;}
 @keyframes glow{0%,100%{transform:scale(1);}50%{transform:scale(1.3);}}
+/* Reflectores de estadio que barren el fondo */
+.intro-reflector{position:absolute;top:-30%;width:140%;height:160%;pointer-events:none;mix-blend-mode:screen;opacity:.5;}
+.intro-reflector.r1{left:-20%;background:linear-gradient(105deg,transparent 44%,rgba(0,194,255,.18) 50%,transparent 56%);animation:barrer1 7s ease-in-out infinite;}
+.intro-reflector.r2{right:-20%;background:linear-gradient(255deg,transparent 44%,rgba(255,215,0,.15) 50%,transparent 56%);animation:barrer2 9s ease-in-out infinite;}
+@keyframes barrer1{0%,100%{transform:translateX(-10%) rotate(-6deg);}50%{transform:translateX(10%) rotate(6deg);}}
+@keyframes barrer2{0%,100%{transform:translateX(10%) rotate(6deg);}50%{transform:translateX(-10%) rotate(-6deg);}}
 .i-estrellas{position:absolute;inset:0;pointer-events:none;}
 .i-estrella{position:absolute;border-radius:50%;animation:twinkle linear infinite;}
 @keyframes twinkle{0%,100%{opacity:.1;}50%{opacity:.9;}}
 .fly-ball{position:absolute;font-size:30px;animation:flyBall linear infinite;pointer-events:none;}
 @keyframes flyBall{0%{left:-6%;transform:rotate(0deg);opacity:0;}10%{opacity:1;}90%{opacity:1;}100%{left:108%;transform:rotate(720deg);opacity:0;}}
-.intro-trofeo{font-size:80px;animation:tDrop 1.2s cubic-bezier(.175,.885,.32,1.275) forwards;opacity:0;transform:translateY(-150px);filter:drop-shadow(0 0 30px rgba(255,215,0,.8));}
+/* Aro de luz pulsante detrás del trofeo */
+.intro-trofeo-wrap{position:relative;display:flex;align-items:center;justify-content:center;}
+.intro-trofeo-aro{position:absolute;width:150px;height:150px;border-radius:50%;background:radial-gradient(circle,rgba(255,215,0,.35),transparent 65%);animation:aroPulso 2.2s ease-in-out infinite;}
+@keyframes aroPulso{0%,100%{transform:scale(.85);opacity:.5;}50%{transform:scale(1.25);opacity:1;}}
+.intro-trofeo{font-size:84px;animation:tDrop 1.2s cubic-bezier(.175,.885,.32,1.275) forwards, trofeoFlota 3s ease-in-out infinite 1.2s;opacity:0;transform:translateY(-150px);filter:drop-shadow(0 0 30px rgba(255,215,0,.8));position:relative;}
 @keyframes tDrop{to{opacity:1;transform:translateY(0);}}
-.intro-titulo{font-family:'Bebas Neue',sans-serif;font-size:clamp(40px,10vw,70px);line-height:.95;background:linear-gradient(135deg,#FFD700,#FFF3A0,#FFA500);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-top:10px;opacity:0;animation:subir .8s ease forwards 1s;}
+@keyframes trofeoFlota{0%,100%{transform:translateY(0) rotate(-3deg);}50%{transform:translateY(-12px) rotate(3deg);}}
+.intro-titulo{font-family:'Bebas Neue',sans-serif;font-size:clamp(44px,11vw,76px);line-height:.95;background:linear-gradient(135deg,#FFD700,#FFF3A0,#FFA500,#FFD700);background-size:300% 300%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-top:10px;opacity:0;animation:subir .8s ease forwards 1s, brilloTitulo 4s ease infinite 1.8s;filter:drop-shadow(0 2px 12px rgba(255,165,0,.4));}
 @keyframes subir{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
+@keyframes brilloTitulo{0%,100%{background-position:0% 50%;}50%{background-position:100% 50%;}}
 .intro-sub{font-size:14px;color:var(--gris);letter-spacing:4px;margin-top:5px;opacity:0;animation:subir .8s ease forwards 1.3s;}
 .intro-paises{display:flex;gap:12px;justify-content:center;margin-top:12px;opacity:0;animation:subir .8s ease forwards 1.6s;}
 .intro-pais{display:flex;flex-direction:column;align-items:center;gap:3px;}
-.intro-pais img{width:48px;height:32px;border-radius:4px;object-fit:cover;}
+.intro-pais img{width:48px;height:32px;border-radius:4px;object-fit:cover;box-shadow:0 3px 10px rgba(0,0,0,.4);transition:transform .3s;}
+.intro-pais img:hover{transform:translateY(-3px) scale(1.05);}
 .intro-pais span{font-size:10px;color:var(--gris);letter-spacing:1px;font-weight:700;}
 .intro-linea{height:3px;width:0;background:linear-gradient(90deg,var(--rojo),var(--oro),#00C2FF);margin:12px auto;border-radius:2px;animation:linea 1s ease forwards 2s;}
 @keyframes linea{to{width:260px;}}
-.pv-card{background:rgba(0,31,91,.7);border:1px solid rgba(232,0,29,.35);border-radius:14px;padding:14px 16px;max-width:420px;margin:0 auto;opacity:0;animation:subir .8s ease forwards 2.2s;}
+.pv-card{background:rgba(0,31,91,.7);border:1px solid rgba(232,0,29,.35);border-radius:14px;padding:14px 16px;max-width:420px;margin:0 auto;opacity:0;animation:subir .8s ease forwards 2.2s;box-shadow:0 8px 30px rgba(0,0,0,.3);backdrop-filter:blur(4px);}
 .pv-logo{font-family:'Bebas Neue',sans-serif;font-size:18px;color:var(--rojo);letter-spacing:2px;margin-bottom:3px;}
 .pv-logo span{color:var(--oro);}
 .pv-empresa{font-size:12px;font-weight:800;color:var(--oro);letter-spacing:2px;margin-bottom:8px;}
 .pv-locs{display:grid;grid-template-columns:1fr 1fr;gap:4px 12px;text-align:left;margin-bottom:6px;}
 .pv-loc strong{display:block;font-size:12px;font-weight:800;color:var(--blanco);}
 .pv-loc span{font-size:10px;color:var(--gris);line-height:1.5;}
-.pv-wa{display:inline-flex;align-items:center;gap:4px;margin-top:4px;background:rgba(37,211,102,.15);border:1px solid rgba(37,211,102,.4);color:#25D366;font-size:11px;font-weight:800;padding:3px 9px;border-radius:20px;text-decoration:none;}
+.pv-wa{display:inline-flex;align-items:center;gap:4px;margin-top:4px;background:rgba(37,211,102,.15);border:1px solid rgba(37,211,102,.4);color:#25D366;font-size:11px;font-weight:800;padding:3px 9px;border-radius:20px;text-decoration:none;transition:all .2s;}
+.pv-wa:active{background:rgba(37,211,102,.3);transform:scale(.96);}
 .pv-email{font-size:11px;color:#00C2FF;margin-top:4px;}
 .intro-linea2{height:2px;width:0;background:linear-gradient(90deg,var(--rojo),var(--oro),#00C2FF);margin:10px auto;border-radius:2px;animation:linea 1s ease forwards 3s;}
-.btn-entrar{display:block;margin:14px auto 0;padding:16px 48px;background:linear-gradient(135deg,var(--rojo),#8B0000);color:#fff;border:none;border-radius:50px;font-family:'Nunito',sans-serif;font-size:20px;font-weight:900;cursor:pointer;box-shadow:0 0 30px rgba(232,0,29,.5);transition:transform .2s;opacity:0;animation:subir .8s ease forwards 3.2s;position:relative;overflow:hidden;}
+.btn-entrar{display:block;margin:14px auto 0;padding:17px 52px;background:linear-gradient(135deg,var(--rojo),#8B0000);color:#fff;border:none;border-radius:50px;font-family:'Nunito',sans-serif;font-size:21px;font-weight:900;cursor:pointer;box-shadow:0 0 30px rgba(232,0,29,.5);transition:transform .2s;opacity:0;animation:subir .8s ease forwards 3.2s, latido 1.8s ease-in-out infinite 4s;position:relative;overflow:hidden;}
 .btn-entrar:active{transform:scale(.97);}
 .btn-entrar::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.2),transparent);transform:translateX(-100%);animation:shimmer 2.5s ease infinite 3.5s;}
 @keyframes shimmer{to{transform:translateX(200%);}}
+@keyframes latido{0%,100%{box-shadow:0 0 30px rgba(232,0,29,.5);}50%{box-shadow:0 0 44px rgba(232,0,29,.85);transform:scale(1.02);}}
 
 /* ══ ANIMACIÓN MENÚ ══ */
 #menuAnim{position:fixed;inset:0;z-index:8000;pointer-events:none;display:none;}
@@ -232,6 +247,17 @@ tbody td{padding:9px 10px;font-size:13px;font-weight:700;}
 
 /* APUESTAS */
 .apuestas-config{background:var(--tarjeta);border:2px solid rgba(255,215,0,.2);border-radius:16px;padding:16px;margin-bottom:14px;}
+.admin-only{display:none;}
+body.es-admin .admin-only{display:block;}
+
+/* ── BALONES FLOTANTES DE FONDO (animación en todas las páginas) ── */
+.balones-fondo{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden;}
+.balon-flota{position:absolute;font-size:28px;opacity:.07;animation:balonSube linear infinite;will-change:transform;}
+@keyframes balonSube{
+  0%{transform:translateY(110vh) rotate(0deg);}
+  100%{transform:translateY(-15vh) rotate(360deg);}
+}
+.cabecera, .nav-bottom, .pagina{position:relative;z-index:1;}
 .apuestas-config h3{font-size:18px;font-weight:900;color:var(--oro);margin-bottom:12px;}
 .config-fila{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;}
 .config-item label{font-size:12px;font-weight:800;color:var(--gris);letter-spacing:1px;display:block;margin-bottom:5px;text-transform:uppercase;}
@@ -669,10 +695,15 @@ tbody td{padding:9px 10px;font-size:13px;font-weight:700;}
 <!-- INTRO -->
 <div id="intro">
   <div class="intro-glow"></div>
+  <div class="intro-reflector r1"></div>
+  <div class="intro-reflector r2"></div>
   <div class="i-estrellas" id="iEstrellas"></div>
   <div class="fly-ball" style="top:30%;animation-duration:6s;animation-delay:0s">⚽</div>
   <div class="fly-ball" style="top:65%;animation-duration:5s;animation-delay:2.5s;font-size:22px">⚽</div>
-  <div class="intro-trofeo">🏆</div>
+  <div class="intro-trofeo-wrap">
+    <div class="intro-trofeo-aro"></div>
+    <div class="intro-trofeo">🏆</div>
+  </div>
   <div class="intro-titulo">COPA MUNDIAL<br>FIFA 2026</div>
   <div class="intro-sub">CANADÁ · MÉXICO · EE.UU.</div>
   <div class="intro-paises">
@@ -834,6 +865,7 @@ tbody td{padding:9px 10px;font-size:13px;font-weight:700;}
 <!-- APP -->
 <div id="app">
   <div class="bg-fondo"></div>
+  <div class="balones-fondo" id="balonesFondo" aria-hidden="true"></div>
   <div class="cabecera">
     <div class="cab-logo">
       <span class="cab-trofeo">🏆</span>
@@ -909,8 +941,8 @@ tbody td{padding:9px 10px;font-size:13px;font-weight:700;}
         <button onclick="abrirPolla()" style="width:100%;padding:16px;background:linear-gradient(135deg,var(--oro),#FFA500);border:none;border-radius:14px;color:var(--azul);font-family:'Nunito',sans-serif;font-size:18px;font-weight:900;cursor:pointer;">🎫 ABRIR POLLA DE CLASIFICADOS</button>
       </div>
 
-      <!-- PANEL DE ESTADO API -->
-      <div class="api-panel" id="apiPanel">
+      <!-- PANEL DE ESTADO API (solo admin) -->
+      <div class="api-panel admin-only" id="apiPanel">
         <div class="api-panel-header">
           <div class="api-panel-titulo">📡 Marcadores Automáticos</div>
           <div class="api-estado-luz" id="apiEstadoLuz">
@@ -1243,6 +1275,22 @@ window.addEventListener('load',()=>{
     koPartidos=crearKO();
     jugadores=[{id:1,nombre:'Jugador 1',emoji:'😎',color:'#00C2FF',ganado:0,perdido:0,pendiente:0}];
     apuestas=[];cfg={tope:50000,min:5000};totalGoles=0;campeonMostrado=false;
+  }
+  aplicarAdminMode();
+  // Generar balones flotantes de fondo
+  const bf=document.getElementById('balonesFondo');
+  if(bf){
+    const emojis=['⚽','🏆','⚽','🥅','⚽'];
+    for(let i=0;i<14;i++){
+      const b=document.createElement('div');
+      b.className='balon-flota';
+      b.textContent=emojis[Math.floor(Math.random()*emojis.length)];
+      b.style.left=Math.random()*100+'%';
+      b.style.fontSize=(20+Math.random()*30)+'px';
+      b.style.animationDuration=(14+Math.random()*16)+'s';
+      b.style.animationDelay=(Math.random()*16)+'s';
+      bf.appendChild(b);
+    }
   }
 });
 
@@ -2114,7 +2162,7 @@ function renderizarPartidos(){
         </div>
         ${golesH?`<div class="goles-log">${golesH}</div>`:''}
       </div>
-      ${p.estado!=='finished'?`
+      ${(p.estado!=='finished' && esAdminMode())?`
       <div class="partido-acciones">
         <button class="btn-gol btn-gol-local" onclick="anotarGol(${p.id},'local',false)">⚽ Gol ${lN.split(' ')[0]}</button>
         <button class="btn-gol btn-gol-visita" onclick="anotarGol(${p.id},'visita',false)">⚽ Gol ${vN.split(' ')[0]}</button>
@@ -2122,16 +2170,17 @@ function renderizarPartidos(){
       <button class="btn-terminar-partido" onclick="pedirConfirmarTerminar(${p.id})">🏁 El partido terminó</button>
       <div class="partido-acciones-extra">
         <button class="btn-accion btn-editar" onclick="abrirEditar(${p.id})">✏️ Corregir goles</button>
-        <button class="btn-accion btn-apostar" onclick="abrirApuesta(${p.id},false)">💰 Apostar</button>
-      </div>`:`
+      </div>`:p.estado==='finished'?`
       <div style="margin:0 14px 12px;background:rgba(0,200,83,.07);border:2px solid rgba(0,200,83,.25);border-radius:13px;padding:12px;text-align:center">
         <div style="font-size:20px;margin-bottom:3px">✅</div>
         <div style="font-size:15px;font-weight:900;color:var(--verde)">Partido finalizado</div>
         <div style="font-size:13px;color:var(--gris);margin-top:2px">${p.gL} — ${p.gV}</div>
       </div>
-      <div class="partido-acciones-extra">
+      ${esAdminMode()?`<div class="partido-acciones-extra">
         <button class="btn-accion btn-editar" onclick="abrirEditar(${p.id})">✏️ Corregir goles</button>
-        <button class="btn-accion btn-apostar" onclick="abrirApuesta(${p.id},false)">💰 Ver apuestas</button>
+      </div>`:''}`:`
+      <div style="margin:0 14px 12px;background:rgba(255,255,255,.03);border:1.5px solid rgba(255,255,255,.08);border-radius:13px;padding:11px;text-align:center">
+        <div style="font-size:13px;color:var(--gris);font-weight:700">${p.estado==='live'?'🔴 En vivo · se actualiza solo':'📅 '+p.fecha+' · '+p.hora}</div>
       </div>`}
     </div>`;
   }).join('');
@@ -2507,6 +2556,16 @@ function toast(msg,tipo='ok'){
 // ════════════════════════════════════════════════════════════════
 function abrirPolla(){
   document.getElementById('pollaApp').classList.add('activo');
+  // Actualizar textos según la config actual
+  const instr=document.getElementById('pll_instrucciones');
+  if(instr){
+    const rango = PLL_MIN_POR_GRUPO===PLL_MAX_POR_GRUPO
+      ? `<span class="destacado">${PLL_MIN_POR_GRUPO} equipos</span>`
+      : `entre <span class="destacado">${PLL_MIN_POR_GRUPO} y ${PLL_MAX_POR_GRUPO} equipos</span>`;
+    instr.innerHTML=`📋 <strong>¿Cómo jugar?</strong><br>Escoge ${rango} en cada grupo para poder pasar al siguiente, hasta completar <span class="destacado">${PLL_TOPE_TOTAL} equipos en total</span>. Gana quien acierte más equipos que clasifiquen.`;
+  }
+  const totalEl=document.querySelector('#pll_contActual + .total');
+  if(totalEl) totalEl.textContent='/'+PLL_TOPE_TOTAL;
   // Reset a pantalla de ingreso
   pllMostrarPantalla('ingreso');
   window.scrollTo(0,0);
@@ -2522,9 +2581,10 @@ const pllFUrl=(k,w=80)=>`https://flagcdn.com/w${w}/${PLL_FLAGS[k]||'un'}.png`;
 const PLL_EQUIPOS={mexico:'México',sudafrica:'Sudáfrica',corea:'Corea del Sur',checa:'Rep. Checa',canada:'Canadá',bosnia:'Bosnia',suiza:'Suiza',qatar:'Qatar',brasil:'Brasil',marruecos:'Marruecos',haiti:'Haití',escocia:'Escocia',eeuu:'EE.UU.',turquia:'Turquía',australia:'Australia',paraguay:'Paraguay',alemania:'Alemania',curazao:'Curazao',noruega:'Noruega',jordania:'Jordania',paises_bajos:'Países Bajos',japon:'Japón',suecia:'Suecia',tunez:'Túnez',belgica:'Bélgica',iran:'Irán',nueva_zelanda:'Nueva Zelanda',egipto:'Egipto',espana:'España',uruguay:'Uruguay',arabia:'Arabia Saudita',cabo_verde:'Cabo Verde',francia:'Francia',senegal:'Senegal',uzbekistan:'Uzbekistán',costa_marfil:'Costa de Marfil',argentina:'Argentina',argelia:'Argelia',austria:'Austria',ecuador:'Ecuador',portugal:'Portugal',colombia:'Colombia',irak:'Irak',ghana:'Ghana',inglaterra:'Inglaterra',croacia:'Croacia',panama:'Panamá'};
 const PLL_GRUPOS={A:['mexico','sudafrica','corea','checa'],B:['canada','bosnia','suiza','qatar'],C:['brasil','marruecos','haiti','escocia'],D:['eeuu','turquia','australia','paraguay'],E:['alemania','curazao','noruega','jordania'],F:['paises_bajos','japon','suecia','tunez'],G:['belgica','iran','nueva_zelanda','egipto'],H:['espana','uruguay','arabia','cabo_verde'],I:['francia','senegal','uzbekistan','costa_marfil'],J:['argentina','argelia','austria','ecuador'],K:['portugal','colombia','irak','ghana'],L:['inglaterra','croacia','panama','haiti']};
 
-const PLL_TOPE_TOTAL=32;
-const PLL_MIN_POR_GRUPO=2;
-const PLL_MAX_POR_GRUPO=3;
+// Configuración de la polla (el admin puede cambiarla; se guarda en Firebase)
+let PLL_TOPE_TOTAL=32;   // cuántos equipos en total debe seleccionar/acertar
+let PLL_MIN_POR_GRUPO=2;  // mínimo por grupo
+let PLL_MAX_POR_GRUPO=3;  // máximo por grupo
 
 // ════════════════ BASE DE DATOS DE PRUEBA ════════════════
 // (En la versión real esto vendrá de Firebase)
@@ -2668,11 +2728,11 @@ function pllRenderizarGrupos(){
       <div class="grupo-bloque-cab">
         <div style="display:flex;align-items:center;gap:12px">
           <span class="grupo-letra-grande">${letra}</span>
-          <span class="grupo-bloque-info">${desbloqueado?'Elige 2 o 3':'🔒 Bloqueado'}</span>
+          <span class="grupo-bloque-info">${desbloqueado?(PLL_MIN_POR_GRUPO===PLL_MAX_POR_GRUPO?'Elige '+PLL_MIN_POR_GRUPO:'Elige '+PLL_MIN_POR_GRUPO+' o '+PLL_MAX_POR_GRUPO):'🔒 Bloqueado'}</span>
         </div>
-        <span class="grupo-contador-mini ${completo?'ok':''}" id="grupoMini-${letra}">${desbloqueado?sel.length+'/3':'🔒'}</span>
+        <span class="grupo-contador-mini ${completo?'ok':''}" id="grupoMini-${letra}">${desbloqueado?sel.length+'/'+PLL_MAX_POR_GRUPO:'🔒'}</span>
       </div>
-      ${!desbloqueado?`<div class="grupo-candado">🔒 Primero completa mínimo 2 equipos en los grupos anteriores</div>`:`
+      ${!desbloqueado?`<div class="grupo-candado">🔒 Primero completa mínimo ${PLL_MIN_POR_GRUPO} equipos en los grupos anteriores</div>`:`
       <div class="grupo-equipos">
         ${equipos.map(eq=>{
           const idx=sel.indexOf(eq);
@@ -2694,7 +2754,7 @@ function pllToggleEquipo(grupo,equipo){
   // Verificar que el grupo esté desbloqueado
   if(!pllGrupoDesbloqueado(grupo)){
     const incompleto=pllPrimerGrupoIncompleto();
-    pllToast(`🔒 Primero completa mínimo 2 equipos en el grupo ${incompleto}`);
+    pllToast(`🔒 Primero completa mínimo ${PLL_MIN_POR_GRUPO} equipos en el grupo ${incompleto}`);
     pllIrAGrupo(incompleto);
     return;
   }
@@ -2718,7 +2778,7 @@ function pllToggleEquipo(grupo,equipo){
     sel.splice(idx,1);
   } else {
     if(sel.length>=PLL_MAX_POR_GRUPO){
-      pllToast(`Máximo 3 equipos en el grupo ${grupo}`);
+      pllToast(`Máximo ${PLL_MAX_POR_GRUPO} equipos en el grupo ${grupo}`);
       return;
     }
     if(totalActual>=PLL_TOPE_TOTAL){
@@ -2740,6 +2800,8 @@ function pllActualizarContador(){
   const total=Object.values(pllSeleccion).reduce((s,a)=>s+a.length,0);
   document.getElementById('pll_contActual').textContent=total;
   document.getElementById('pll_contBarra').style.width=(total/PLL_TOPE_TOTAL*100)+'%';
+  const totalEl=document.querySelector('#pll_contActual + .total');
+  if(totalEl) totalEl.textContent='/'+PLL_TOPE_TOTAL;
 
   // Validar: todos los grupos con mínimo 2 Y total exacto 32
   const todosMin=Object.values(pllSeleccion).every(a=>a.length>=PLL_MIN_POR_GRUPO);
@@ -2747,13 +2809,13 @@ function pllActualizarContador(){
   const btn=document.getElementById('pll_btnConfirmar');
 
   if(total<PLL_TOPE_TOTAL){
-    faltanEl.textContent=`Faltan ${PLL_TOPE_TOTAL-total} equipos por pllSeleccionar`;
+    faltanEl.textContent=`Faltan ${PLL_TOPE_TOTAL-total} equipos por seleccionar`;
     faltanEl.style.color='var(--gris)';
   } else if(total===PLL_TOPE_TOTAL && todosMin){
     faltanEl.textContent='✅ ¡Listo! Ya puedes confirmar';
     faltanEl.style.color='var(--verde)';
   } else if(!todosMin){
-    faltanEl.textContent='⚠️ Cada grupo necesita mínimo 2 equipos';
+    faltanEl.textContent=`⚠️ Cada grupo necesita mínimo ${PLL_MIN_POR_GRUPO} equipos`;
     faltanEl.style.color='var(--oro)';
   }
 
@@ -2762,7 +2824,7 @@ function pllActualizarContador(){
     btn.textContent='✅ CONFIRMAR MI PREDICCIÓN';
   } else {
     btn.className='btn-confirmar no-listo';
-    btn.textContent=total<PLL_TOPE_TOTAL?`Faltan ${PLL_TOPE_TOTAL-total} equipos`:'Cada grupo: mínimo 2';
+    btn.textContent=total<PLL_TOPE_TOTAL?`Faltan ${PLL_TOPE_TOTAL-total} equipos`:`Cada grupo: mínimo ${PLL_MIN_POR_GRUPO}`;
   }
 }
 
@@ -2857,6 +2919,27 @@ function pllToast(msg){
 // ════════════════════════════════════════════════════════════════
 const ADMIN_PASS = 'admin2026'; // ⚠️ Cambiar por tu contraseña
 
+// ── MODO ADMIN ──────────────────────────────────────────────
+// Cuando el admin inicia sesión, se activa el modo admin en este dispositivo.
+// Solo en modo admin se ven los botones de marcar goles / corregir / API.
+function esAdminMode(){
+  return localStorage.getItem('mundial2026_adminmode')==='1';
+}
+function aplicarAdminMode(){
+  if(esAdminMode()) document.body.classList.add('es-admin');
+  else document.body.classList.remove('es-admin');
+}
+function activarAdminMode(){
+  localStorage.setItem('mundial2026_adminmode','1');
+  aplicarAdminMode();
+  if(typeof renderizarTodo==='function') renderizarTodo();
+}
+function desactivarAdminMode(){
+  localStorage.removeItem('mundial2026_adminmode');
+  aplicarAdminMode();
+  if(typeof renderizarTodo==='function') renderizarTodo();
+}
+
 function abrirAdmin(){
   document.getElementById('adminApp').classList.add('activo');
   document.getElementById('admLogin').style.display='block';
@@ -2873,6 +2956,7 @@ function admLogin(){
   if(pass===ADMIN_PASS){
     document.getElementById('admLogin').style.display='none';
     document.getElementById('admPanel').style.display='block';
+    activarAdminMode();
     admRenderClientes();
   } else {
     msg.className='adm-msg error';
@@ -2886,15 +2970,16 @@ function admTab(tab,btn){
   document.getElementById('admSec-'+tab).classList.add('activa');
   if(tab==='clientes') admRenderClientes();
   if(tab==='apuestas') admRenderApuestas();
+  if(tab==='config') admCargarConfigEnUI();
 }
 
 // ── CARGAR EXCEL ──────────────────────────────────────────────
-function admCargarExcel(event){
+function admCargarExcelOficina(event, oficina){
   const file=event.target.files[0];
   const msg=document.getElementById('admCargarMsg');
   if(!file) return;
   msg.className='adm-msg ok';
-  msg.textContent='⏳ Procesando archivo...';
+  msg.textContent=`⏳ Procesando Excel de ${oficina}...`;
   const reader=new FileReader();
   reader.onload=async function(e){
     try{
@@ -2904,25 +2989,22 @@ function admCargarExcel(event){
       const filas=XLSX.utils.sheet_to_json(sheet,{defval:''});
       let nuevas=0, reactivadas=0, protegidas=0, errores=0;
 
-      // Procesar cada fila y subir a Firebase
       for(const fila of filas){
         const ced=String(fila['Cédula']||fila['Cedula']||fila['cedula']||fila['CEDULA']||fila['Documento']||'').trim();
         const nombre=String(fila['Nombre']||fila['nombre']||fila['NOMBRE']||'').trim();
         const tel=String(fila['Teléfono']||fila['Telefono']||fila['telefono']||fila['Celular']||'').trim();
         const factura=String(fila['Factura']||fila['factura']||fila['FACTURA']||'').trim();
         const valor=String(fila['Valor Pagado']||fila['Valor']||fila['valor']||fila['VALOR']||'').trim();
-        const oficina=String(fila['Oficina']||fila['oficina']||fila['OFICINA']||fila['Municipio']||'').trim();
         if(!ced) continue;
 
-        // Buscar si el cliente ya existe en Firebase
         const existente = await buscarClienteFB(ced);
         if(existente && existente.yaAposto){
-          protegidas++; // No tocar — ya apostó
+          protegidas++;
           continue;
         }
         const clienteData = {
           cedula:ced, nombre:nombre||'Cliente', telefono:tel,
-          factura:factura, valor:valor, oficina:oficina||'Sin oficina',
+          factura:factura, valor:valor, oficina:oficina,
           activa:true,
           yaAposto: existente ? existente.yaAposto : false,
           prediccion: existente ? existente.prediccion : null,
@@ -2930,17 +3012,15 @@ function admCargarExcel(event){
         };
         const ok = await guardarClienteFB(clienteData);
         if(ok){
-          if(existente) reactivadas++;
-          else nuevas++;
+          if(existente) reactivadas++; else nuevas++;
           pllClientesDemo[ced] = clienteData;
-        } else {
-          errores++;
-        }
+        } else { errores++; }
       }
 
       msg.className='adm-msg ok';
-      msg.innerHTML=`✅ Excel procesado correctamente:<br>• ${nuevas} clientes nuevos activados<br>• ${reactivadas} actualizados<br>• ${protegidas} protegidos (ya apostaron)<br>${errores>0?'⚠️ '+errores+' filas con error':''}`;
+      msg.innerHTML=`✅ <strong>${oficina}</strong> procesado:<br>• ${nuevas} clientes nuevos<br>• ${reactivadas} actualizados<br>• ${protegidas} protegidos (ya apostaron)${errores>0?'<br>⚠️ '+errores+' con error':''}`;
       admRenderClientes();
+      event.target.value=''; // limpiar para poder recargar el mismo archivo
     }catch(err){
       msg.className='adm-msg error';
       msg.textContent='❌ Error al leer el Excel. Verifica el formato.';
@@ -3074,6 +3154,43 @@ function escucharClientesFB(callback){
   });
 }
 
+// ── CONFIG POLLA EN FIREBASE ──────────────────────────────────
+async function cargarConfigPollaFB(){
+  if(!FB_OK) return;
+  try{
+    const doc = await db.collection('config').doc('polla').get();
+    if(doc.exists){
+      const cfg = doc.data();
+      if(cfg.tope) PLL_TOPE_TOTAL = cfg.tope;
+      if(cfg.min!==undefined) PLL_MIN_POR_GRUPO = cfg.min;
+      if(cfg.max) PLL_MAX_POR_GRUPO = cfg.max;
+      console.log('⚙️ Config polla cargada:', cfg);
+    }
+  }catch(e){ console.error('Error cargando config polla:',e); }
+}
+function admCargarConfigEnUI(){
+  document.getElementById('admCfgTope').value = PLL_TOPE_TOTAL;
+  document.getElementById('admCfgMin').value = PLL_MIN_POR_GRUPO;
+  document.getElementById('admCfgMax').value = PLL_MAX_POR_GRUPO;
+}
+async function admGuardarConfigPolla(){
+  const msg = document.getElementById('admConfigMsg');
+  const tope = parseInt(document.getElementById('admCfgTope').value)||32;
+  const min = parseInt(document.getElementById('admCfgMin').value);
+  const max = parseInt(document.getElementById('admCfgMax').value)||3;
+  if(min>max){ msg.className='adm-msg error'; msg.textContent='❌ El mínimo no puede ser mayor que el máximo'; return; }
+  if(tope < min*12){ msg.className='adm-msg error'; msg.textContent=`❌ El total (${tope}) debe ser al menos ${min*12} (mínimo ${min} × 12 grupos)`; return; }
+  if(tope > max*12){ msg.className='adm-msg error'; msg.textContent=`❌ El total (${tope}) no puede superar ${max*12} (máximo ${max} × 12 grupos)`; return; }
+  try{
+    await db.collection('config').doc('polla').set({tope, min, max, actualizado:new Date().toISOString()});
+    PLL_TOPE_TOTAL = tope; PLL_MIN_POR_GRUPO = min; PLL_MAX_POR_GRUPO = max;
+    msg.className='adm-msg ok';
+    msg.innerHTML=`✅ Configuración guardada:<br>• Total a acertar: ${tope}<br>• Por grupo: entre ${min} y ${max}`;
+  }catch(e){
+    msg.className='adm-msg error'; msg.textContent='❌ Error al guardar. Revisa tu conexión.'; console.error(e);
+  }
+}
+
 // Compatibilidad: mantener guardarPolla/cargarPolla como alias
 function guardarPolla(){
   // Guarda el cliente actual y su apuesta a Firestore
@@ -3085,6 +3202,8 @@ function guardarPolla(){
 }
 
 async function cargarPolla(){
+  // Cargar config de la polla primero
+  await cargarConfigPollaFB();
   // Primero intenta cargar de Firebase
   const datosFB = await cargarTodosClientesFB();
   if(Object.keys(datosFB).length > 0){
@@ -3169,7 +3288,7 @@ cargarPolla();
       <div class="bienvenida-sub" id="pll_bienvenidaSub">Oficina: —</div>
     </div>
 
-    <div class="instrucciones">
+    <div class="instrucciones" id="pll_instrucciones">
       📋 <strong>¿Cómo jugar?</strong><br>
       Escoge <span class="destacado">mínimo 2 equipos</span> en cada grupo para poder pasar al siguiente. Puedes agregar un <span class="destacado">3er equipo</span> en los grupos que quieras, hasta completar <span class="destacado">32 equipos en total</span>.
     </div>
@@ -3259,6 +3378,7 @@ cargarPolla();
   <div class="adm-main" id="admPanel" style="display:none">
     <div class="adm-tabs">
       <button class="adm-tab activo" onclick="admTab('cargar',this)">📤 Cargar Excel</button>
+      <button class="adm-tab" onclick="admTab('config',this)">⚙️ Config Polla</button>
       <button class="adm-tab" onclick="admTab('clientes',this)">👥 Clientes</button>
       <button class="adm-tab" onclick="admTab('apuestas',this)">🎫 Apuestas</button>
       <button class="adm-tab" onclick="admTab('ganadores',this)">🏆 Ganadores</button>
@@ -3267,21 +3387,64 @@ cargarPolla();
     <!-- CARGAR EXCEL -->
     <div class="adm-seccion activa" id="admSec-cargar">
       <div class="adm-card">
-        <h3>📤 Cargar Excel de Pagos</h3>
-        <p>Sube el archivo Excel con los clientes que pagaron. Debe tener las columnas: <strong>Cédula, Nombre, Teléfono, Factura, Valor Pagado, Oficina</strong>. Las cédulas que ya apostaron NO se reactivan.</p>
-        <label class="adm-file-label" for="admExcelFile">📁 Seleccionar archivo Excel (.xlsx)</label>
-        <input type="file" id="admExcelFile" accept=".xlsx,.xls,.csv" style="display:none" onchange="admCargarExcel(event)">
+        <h3>📤 Cargar Excel por Oficina</h3>
+        <p>Sube el Excel de cada oficina por separado. Columnas: <strong>Cédula, Nombre, Teléfono, Factura, Valor Pagado</strong>. (La oficina se asigna según el botón que uses, no necesita columna Oficina). Las cédulas que ya apostaron NO se reactivan.</p>
+
+        <label class="adm-file-label" for="admExcel-florencia">🏙️ Cargar Excel — Florencia</label>
+        <input type="file" id="admExcel-florencia" accept=".xlsx,.xls,.csv" style="display:none" onchange="admCargarExcelOficina(event,'Florencia')">
+
+        <label class="adm-file-label" for="admExcel-paujil">🌿 Cargar Excel — El Paujil</label>
+        <input type="file" id="admExcel-paujil" accept=".xlsx,.xls,.csv" style="display:none" onchange="admCargarExcelOficina(event,'El Paujil')">
+
+        <label class="adm-file-label" for="admExcel-doncello">🌄 Cargar Excel — El Doncello</label>
+        <input type="file" id="admExcel-doncello" accept=".xlsx,.xls,.csv" style="display:none" onchange="admCargarExcelOficina(event,'El Doncello')">
+
+        <label class="adm-file-label" for="admExcel-cartagena">⛵ Cargar Excel — Cartagena del Chairá</label>
+        <input type="file" id="admExcel-cartagena" accept=".xlsx,.xls,.csv" style="display:none" onchange="admCargarExcelOficina(event,'Cartagena del Chairá')">
+
         <div class="adm-msg" id="admCargarMsg"></div>
       </div>
       <div class="adm-card">
         <h3>📋 Formato esperado del Excel</h3>
+        <p>El archivo de cada oficina debe tener estas columnas (el orden no importa):</p>
         <div class="adm-tabla-wrap">
           <table class="adm-tabla">
-            <tr><th>Cédula</th><th>Nombre</th><th>Teléfono</th><th>Factura</th><th>Valor</th><th>Oficina</th></tr>
-            <tr><td>1117XXX</td><td>Juan Pérez</td><td>320...</td><td>F-001</td><td>45000</td><td>Florencia</td></tr>
-            <tr><td>1118XXX</td><td>Ana Gómez</td><td>318...</td><td>F-002</td><td>52000</td><td>El Doncello</td></tr>
+            <tr><th>Cédula</th><th>Nombre</th><th>Teléfono</th><th>Factura</th><th>Valor Pagado</th></tr>
+            <tr><td>1117XXX</td><td>Juan Pérez</td><td>320...</td><td>F-001</td><td>45000</td></tr>
+            <tr><td>1118XXX</td><td>Ana Gómez</td><td>318...</td><td>F-002</td><td>52000</td></tr>
           </table>
         </div>
+      </div>
+    </div>
+
+    <!-- CONFIG POLLA -->
+    <div class="adm-seccion" id="admSec-config">
+      <div class="adm-card">
+        <h3>⚙️ Configurar la Polla</h3>
+        <p>Define cómo juegan los clientes. Estos valores se guardan en la nube y aplican para todos.</p>
+
+        <div style="margin-bottom:16px">
+          <label style="display:block;font-size:14px;font-weight:800;color:var(--gris);margin-bottom:6px">🎯 ¿Cuántos equipos debe seleccionar en total?</label>
+          <input type="number" id="admCfgTope" class="adm-input" style="text-align:center" value="32" min="12" max="48">
+          <p style="font-size:13px;margin:6px 0 0">Ejemplo: 32 (los que clasifican), 20, o 10. Debe ser al menos igual a (mínimo por grupo × 12).</p>
+        </div>
+
+        <div style="margin-bottom:16px">
+          <label style="display:block;font-size:14px;font-weight:800;color:var(--gris);margin-bottom:6px">🔢 Mínimo de equipos por grupo</label>
+          <input type="number" id="admCfgMin" class="adm-input" style="text-align:center" value="2" min="0" max="4">
+        </div>
+
+        <div style="margin-bottom:16px">
+          <label style="display:block;font-size:14px;font-weight:800;color:var(--gris);margin-bottom:6px">🔢 Máximo de equipos por grupo</label>
+          <input type="number" id="admCfgMax" class="adm-input" style="text-align:center" value="3" min="1" max="4">
+        </div>
+
+        <button class="adm-btn" onclick="admGuardarConfigPolla()">💾 Guardar configuración</button>
+        <div class="adm-msg" id="admConfigMsg"></div>
+      </div>
+      <div class="adm-card">
+        <h3>📌 Cómo funciona</h3>
+        <p>• El cliente elige libremente entre el mínimo y el máximo por grupo.<br>• Debe completar exactamente el total que fijaste para poder confirmar.<br>• Gana quien acierte más equipos de los que realmente clasifiquen.<br>• <strong>Cámbialo antes de que empiecen a apostar</strong> — si ya hay apuestas, cambiar esto puede descuadrar las predicciones existentes.</p>
       </div>
     </div>
 
