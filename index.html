@@ -2,16 +2,24 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>PROYECTOVISION · MUNDIAL 2026</title>
+<!-- ════ PWA (app instalable) ════ -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#001F5B">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Mundial 2026">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="apple-touch-icon" href="icon-192.png">
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 <style>
 :root{--azul:#001F5B;--rojo:#E8001D;--oro:#FFD700;--verde:#00C853;--gris:#607D9F;--blanco:#FFF;--fondo:#03091A;--tarjeta:#081830;--borde:rgba(255,255,255,0.1);}
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
-html,body{font-family:'Nunito',sans-serif;background:var(--fondo);color:var(--blanco);min-height:100vh;overflow-x:hidden;font-size:18px;}
+html,body{font-family:'Nunito',sans-serif;background:var(--fondo);color:var(--blanco);min-height:100vh;min-height:100dvh;overflow-x:hidden;font-size:18px;-webkit-text-size-adjust:100%;}
 
 /* ══ INTRO ══ */
-#intro{position:fixed;inset:0;background:linear-gradient(160deg,#03091A,#001F5B,#03091A);z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;text-align:center;overflow:hidden;}
+#intro{position:fixed;inset:0;background:linear-gradient(160deg,#03091A,#001F5B,#03091A);z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;padding-top:max(20px,env(safe-area-inset-top));padding-bottom:max(20px,env(safe-area-inset-bottom));text-align:center;overflow-y:auto;-webkit-overflow-scrolling:touch;}
 .intro-glow{position:absolute;width:600px;height:600px;background:radial-gradient(ellipse,rgba(0,194,255,.1),transparent 70%);animation:glow 3s ease-in-out infinite;}
 @keyframes glow{0%,100%{transform:scale(1);}50%{transform:scale(1.3);}}
 /* Reflectores de estadio que barren el fondo */
@@ -106,7 +114,7 @@ html,body{font-family:'Nunito',sans-serif;background:var(--fondo);color:var(--bl
 @keyframes gcfFall{to{transform:translateY(110vh) rotate(720deg);opacity:0;}}
 
 /* ══ APP ══ */
-#app{display:none;min-height:100vh;}
+#app{display:none;min-height:100vh;min-height:100dvh;}
 .bg-fondo{position:fixed;inset:0;background:linear-gradient(160deg,#03091A,#001228,#03091A);pointer-events:none;z-index:0;}
 
 /* CABECERA */
@@ -122,7 +130,7 @@ html,body{font-family:'Nunito',sans-serif;background:var(--fondo);color:var(--bl
 .btn-tv{display:inline-flex;align-items:center;gap:5px;padding:7px 11px;background:linear-gradient(135deg,var(--rojo),#8B0000);border:none;border-radius:20px;color:#fff;font-family:'Nunito',sans-serif;font-size:12px;font-weight:800;cursor:pointer;text-decoration:none;box-shadow:0 0 12px rgba(232,0,29,.4);}
 
 /* NAV INFERIOR */
-.nav-bottom{position:fixed;bottom:0;left:0;right:0;z-index:100;background:rgba(0,18,40,.97);border-top:2px solid rgba(255,255,255,.08);display:flex;padding:6px 0 8px;}
+.nav-bottom{position:fixed;bottom:0;left:0;right:0;z-index:100;background:rgba(0,18,40,.97);border-top:2px solid rgba(255,255,255,.08);display:flex;padding:6px 0 8px;padding-bottom:max(8px,env(safe-area-inset-bottom));}
 .nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:7px 2px;background:transparent;border:none;cursor:pointer;transition:all .2s;}
 .nav-btn-icon{font-size:22px;line-height:1;transition:transform .2s;}
 .nav-btn-label{font-size:9px;font-weight:800;color:var(--gris);letter-spacing:0;}
@@ -132,7 +140,7 @@ html,body{font-family:'Nunito',sans-serif;background:var(--fondo);color:var(--bl
 .nav-btn.activo .nav-indicador{opacity:1;}
 
 /* CONTENIDO */
-main{position:relative;z-index:1;padding:14px;padding-bottom:95px;}
+main{position:relative;z-index:1;padding:14px;padding-bottom:calc(95px + env(safe-area-inset-bottom));}
 .pagina{display:none;animation:aparecer .3s ease;}
 .pagina.activa{display:block;}
 @keyframes aparecer{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
@@ -456,7 +464,7 @@ body.es-admin .admin-only{display:block;}
 
 .api-config{background:var(--tarjeta);border:2px solid rgba(0,194,255,.2);border-radius:18px;padding:18px;margin-bottom:16px;}
 .api-config h3{font-size:20px;font-weight:900;color:#00C2FF;margin-bottom:14px;}
-.api-key-input{width:100%;padding:12px 14px;background:rgba(0,194,255,.07);border:2px solid rgba(0,194,255,.25);border-radius:12px;color:#fff;font-family:'Nunito',sans-serif;font-size:15px;font-weight:700;outline:none;margin-bottom:10px;letter-spacing:1px;}
+.api-key-input{width:100%;padding:12px 14px;background:rgba(0,194,255,.07);border:2px solid rgba(0,194,255,.25);border-radius:12px;color:#fff;font-family:'Nunito',sans-serif;font-size:16px;font-weight:700;outline:none;margin-bottom:10px;letter-spacing:1px;}
 .api-key-input::placeholder{color:var(--gris);letter-spacing:0;}
 .api-status-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
 .btn-api{padding:11px 20px;border:none;border-radius:12px;font-family:'Nunito',sans-serif;font-size:15px;font-weight:900;cursor:pointer;transition:all .2s;}
@@ -524,7 +532,7 @@ body.es-admin .admin-only{display:block;}
 
 
 /* ════ POLLA DE CLASIFICADOS (integrada) ════ */
-#pollaApp{position:fixed;inset:0;z-index:5000;background:var(--fondo);overflow-y:auto;display:none;}
+#pollaApp{position:fixed;inset:0;z-index:5000;background:var(--fondo);overflow-y:auto;-webkit-overflow-scrolling:touch;display:none;}
 #pollaApp.activo{display:block;}
 #pollaApp .pll-cab{position:sticky;top:0;z-index:100;background:rgba(0,31,91,.96);backdrop-filter:blur(20px);border-bottom:3px solid var(--rojo);padding:14px 18px;display:flex;align-items:center;gap:12px;}
 #pollaApp .pll-cab-cerrar{margin-left:auto;background:rgba(255,255,255,.1);border:none;color:#fff;font-size:20px;width:40px;height:40px;border-radius:50%;cursor:pointer;font-weight:900;}
@@ -648,7 +656,7 @@ body.es-admin .admin-only{display:block;}
 #pollaApp #toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
 
 /* ════ PORTAL ADMIN ════ */
-#adminApp{position:fixed;inset:0;z-index:6000;background:var(--fondo);overflow-y:auto;display:none;}
+#adminApp{position:fixed;inset:0;z-index:6000;background:var(--fondo);overflow-y:auto;-webkit-overflow-scrolling:touch;display:none;}
 #adminApp.activo{display:block;}
 #adminApp .adm-cab{position:sticky;top:0;z-index:100;background:rgba(20,20,40,.97);backdrop-filter:blur(20px);border-bottom:3px solid var(--oro);padding:14px 18px;display:flex;align-items:center;gap:12px;}
 #adminApp .adm-cab-cerrar{margin-left:auto;background:rgba(255,255,255,.1);border:none;color:#fff;font-size:18px;width:40px;height:40px;border-radius:50%;cursor:pointer;font-weight:900;}
@@ -683,7 +691,7 @@ body.es-admin .admin-only{display:block;}
 #adminApp .adm-badge.activa{background:rgba(0,200,83,.15);color:var(--verde);}
 #adminApp .adm-badge.aposto{background:rgba(255,215,0,.15);color:var(--oro);}
 #adminApp .adm-badge.inactiva{background:rgba(160,180,204,.12);color:var(--gris);}
-#adminApp .adm-buscar{width:100%;padding:12px 16px;background:var(--tarjeta);border:2px solid var(--borde);border-radius:12px;color:#fff;font-size:15px;font-weight:700;outline:none;margin-bottom:14px;}
+#adminApp .adm-buscar{width:100%;padding:12px 16px;background:var(--tarjeta);border:2px solid var(--borde);border-radius:12px;color:#fff;font-size:16px;font-weight:700;outline:none;margin-bottom:14px;}
 #adminApp .adm-msg{padding:12px;border-radius:10px;font-size:14px;font-weight:700;margin-bottom:12px;display:none;}
 #adminApp .adm-msg.ok{background:rgba(0,200,83,.12);border:1.5px solid rgba(0,200,83,.3);color:var(--verde);display:block;}
 #adminApp .adm-msg.error{background:rgba(232,0,29,.12);border:1.5px solid rgba(232,0,29,.3);color:#FF6B6B;display:block;}
@@ -1021,6 +1029,16 @@ firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 const FB_OK = true;
 console.log('🔥 Firebase conectado:', firebaseConfig.projectId);
+
+// ════ Registrar Service Worker (PWA) ════
+if('serviceWorker' in navigator){
+  window.addEventListener('load',()=>{
+    navigator.serviceWorker.register('sw.js')
+      .then(()=>console.log('✅ Service Worker registrado (PWA lista)'))
+      .catch(e=>console.log('SW no registrado:',e));
+  });
+}
+
 </script>
 <script>
 // ── DATOS ──────────────────────────────────────────────────────────────────
