@@ -2853,6 +2853,7 @@ function pllConfirmarApuesta(){
   // Guardar en "base de datos" demo
   pllClienteActual.yaAposto=true;
   pllClienteActual.prediccion=JSON.parse(JSON.stringify(pllSeleccion));
+  pllClienteActual.fechaPrediccion=new Date().toISOString();
   pllClientesDemo[pllClienteActual.cedula]=pllClienteActual;
   // Persistir (localStorage; luego Firebase)
   if(typeof guardarPolla==='function') guardarPolla();
@@ -3053,7 +3054,12 @@ function servicioCumpleFiltros(facturas, f){
     if(!ok) return false;
   }
   if(f.rango && f.rangoIni && f.rangoFin){
-    const ini=new Date(f.rangoIni), fin=new Date(f.rangoFin);
+    // Parsear las fechas del input (formato YYYY-MM-DD) como fechas LOCALES
+    const pIni=f.rangoIni.split('-'), pFin=f.rangoFin.split('-');
+    let ini=new Date(parseInt(pIni[0]),parseInt(pIni[1])-1,parseInt(pIni[2]),0,0,0);
+    let fin=new Date(parseInt(pFin[0]),parseInt(pFin[1])-1,parseInt(pFin[2]),23,59,59);
+    // Si el usuario invirtió las fechas, las corregimos automáticamente
+    if(ini>fin){ const t=ini; ini=fin; fin=t; fin.setHours(23,59,59); ini.setHours(0,0,0); }
     const ok = pagadas.some(x=>{ const d=parseFechaPago(x.fechaPago); return d && d>=ini && d<=fin; });
     if(!ok) return false;
   }
@@ -3069,6 +3075,11 @@ function admCargarExcelOficina(event, oficina){
   const msg=document.getElementById('admCargarMsg');
   if(!file) return;
   const filtros = admLeerFiltros();
+  // Avisar si el rango de fechas está invertido (lo corregimos, pero informamos)
+  if(filtros.rango && filtros.rangoIni && filtros.rangoFin && filtros.rangoIni > filtros.rangoFin){
+    msg.className='adm-msg ok';
+    msg.innerHTML='⚠️ La fecha "Desde" es mayor que "Hasta" — las corregí automáticamente y continúo.';
+  }
   msg.className='adm-msg ok';
   msg.textContent=`⏳ Procesando Excel de ${oficina}...`;
   const reader=new FileReader();
@@ -3192,11 +3203,54 @@ function admRenderApuestas(){
     tabla.innerHTML='<tr><td style="text-align:center;padding:20px;color:var(--gris)">Aún no hay apuestas confirmadas</td></tr>';
     return;
   }
-  tabla.innerHTML=`<tr><th>Cliente</th><th>Oficina</th><th>Predicción (32 equipos)</th></tr>`+
+  // Ordenar por fecha de predicción (más reciente primero)
+  conApuesta.sort((a,b)=> (b.fechaPrediccion||'').localeCompare(a.fechaPrediccion||''));
+  tabla.innerHTML=`<tr><th>Cliente</th><th>Oficina</th><th>Fecha</th><th>Predicción</th><th></th></tr>`+
     conApuesta.map(c=>{
       const eqs=Object.entries(c.prediccion).map(([g,arr])=>`${g}: ${arr.map(e=>PLL_EQUIPOS[e]||e).join(', ')}`).join(' | ');
-      return `<tr><td>${c.nombre}</td><td>${c.oficina}</td><td style="font-size:11px;color:var(--gris)">${eqs}</td></tr>`;
+      let fecha='—';
+      if(c.fechaPrediccion){
+        const d=new Date(c.fechaPrediccion);
+        fecha=d.toLocaleDateString('es-CO',{day:'2-digit',month:'2-digit',year:'2-digit'})+'<br>'+d.toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'});
+      }
+      return `<tr>
+        <td>${c.nombre}<br><span style="font-size:10px;color:var(--gris)">${c.cedula}</span></td>
+        <td>${c.oficina}</td>
+        <td style="font-size:11px;color:var(--gris)">${fecha}</td>
+        <td style="font-size:11px;color:var(--gris)">${eqs}</td>
+        <td><button onclick="admEliminarPrediccion('${c.cedula}')" style="background:rgba(232,0,29,.12);border:1.5px solid rgba(232,0,29,.3);color:#FF6B6B;font-size:11px;font-weight:800;padding:6px 10px;border-radius:8px;cursor:pointer;white-space:nowrap">🗑️ Eliminar</button></td>
+      </tr>`;
     }).join('');
+}
+
+// Eliminar una predicción (con nota obligatoria del motivo)
+async function admEliminarPrediccion(cedula){
+  const c = pllClientesDemo[cedula];
+  if(!c) return;
+  const motivo = prompt(`Vas a ELIMINAR la predicción de:\n${c.nombre} (${cedula})\n\n⚠️ El servicio quedará activo pero podrá volver a apostar.\n\nEscribe el MOTIVO de la eliminación (obligatorio):`);
+  if(motivo===null) return; // canceló
+  if(!motivo.trim()){ alert('Debes escribir un motivo para eliminar la predicción.'); return; }
+  try{
+    // Guardar registro de la eliminación en una colección de auditoría
+    await db.collection('eliminaciones').add({
+      cedula: cedula, nombre: c.nombre, oficina: c.oficina,
+      prediccionEliminada: c.prediccion,
+      fechaPrediccionOriginal: c.fechaPrediccion||null,
+      motivo: motivo.trim(),
+      fechaEliminacion: new Date().toISOString()
+    });
+    // Resetear la apuesta del cliente (queda activo, sin predicción)
+    c.yaAposto=false; c.prediccion=null; c.fechaPrediccion=null;
+    c.actualizado=new Date().toISOString();
+    await guardarClienteFB(c);
+    pllClientesDemo[cedula]=c;
+    alert(`✅ Predicción de ${c.nombre} eliminada.\nMotivo registrado: "${motivo.trim()}"`);
+    admRenderApuestas();
+    admRenderClientes();
+  }catch(e){
+    alert('❌ Error al eliminar. Revisa tu conexión.');
+    console.error(e);
+  }
 }
 
 // ── CALCULAR GANADORES ────────────────────────────────────────
