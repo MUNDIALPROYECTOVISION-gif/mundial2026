@@ -952,7 +952,7 @@ body.es-admin .admin-only{display:block;}
       <div style="background:linear-gradient(135deg,rgba(0,31,91,.8),rgba(232,0,29,.15));border:2px solid var(--oro);border-radius:18px;padding:20px;margin-bottom:16px;text-align:center;">
         <div style="font-size:40px;margin-bottom:8px">🎫</div>
         <div style="font-size:20px;font-weight:900;color:var(--oro);margin-bottom:6px">Polla de Clasificados</div>
-        <div style="font-size:15px;color:var(--texto2);line-height:1.6;margin-bottom:14px">Concurso por oficina para tus clientes. Ingresan con su cédula y predicen los 32 equipos que clasifican. ¡Premio por oficina!</div>
+        <div style="font-size:15px;color:var(--texto2);line-height:1.6;margin-bottom:14px">Concurso por oficina para tus clientes. Ingresan con su código y predicen qué equipos clasifican a la siguiente fase. ¡Premio por oficina!</div>
         <button onclick="abrirPolla()" style="width:100%;padding:16px;background:linear-gradient(135deg,var(--oro),#FFA500);border:none;border-radius:14px;color:var(--azul);font-family:'Nunito',sans-serif;font-size:18px;font-weight:900;cursor:pointer;">🎫 ABRIR POLLA DE CLASIFICADOS</button>
       </div>
 
@@ -1173,7 +1173,53 @@ function guardarDatos(){
     localStorage.setItem(LS_KEY, JSON.stringify({partidos,koPartidos,jugadores,apuestas,cfg,totalGoles,campeonMostrado}));
     mostrarBadgeGuardado();
   }catch(e){console.warn('No se pudo guardar:',e);}
+  // Solo el ADMIN sube los marcadores a Firebase (los clientes solo leen)
+  if(esAdminMode() && typeof guardarPartidosFB==='function'){
+    guardarPartidosFB();
+  }
 }
+
+// ── SINCRONIZAR MARCADORES POR FIREBASE ───────────────────────
+// El admin guarda los partidos en la nube; todos los clientes los leen.
+let _guardarPartidosTimer=null;
+function guardarPartidosFB(){
+  if(!FB_OK) return;
+  // Throttle: esperar 1s para no escribir en cada gol individual
+  clearTimeout(_guardarPartidosTimer);
+  _guardarPartidosTimer=setTimeout(async()=>{
+    try{
+      await db.collection('partidos').doc('estado').set({
+        partidos: partidos,
+        koPartidos: koPartidos,
+        totalGoles: totalGoles,
+        actualizado: new Date().toISOString()
+      });
+      console.log('⚽ Marcadores guardados en Firebase');
+    }catch(e){ console.error('Error guardando partidos FB:',e); }
+  }, 1000);
+}
+
+let _ignorarProximoSnapshot=false;
+function escucharPartidosFB(){
+  if(!FB_OK) return;
+  db.collection('partidos').doc('estado').onSnapshot(doc=>{
+    if(!doc.exists) return;
+    // El admin no se sobreescribe a sí mismo con su propia escritura
+    if(esAdminMode()) return;
+    const d=doc.data();
+    if(Array.isArray(d.partidos)) partidos = d.partidos;
+    if(d.koPartidos) koPartidos = d.koPartidos;
+    if(typeof d.totalGoles==='number') totalGoles = d.totalGoles;
+    // Guardar copia local para que persista al cerrar
+    try{ localStorage.setItem(LS_KEY, JSON.stringify({partidos,koPartidos,jugadores,apuestas,cfg,totalGoles,campeonMostrado})); }catch(e){}
+    // Re-renderizar lo que el cliente esté viendo (solo si la app ya está lista)
+    if(partidos && typeof renderizarTodo==='function'){
+      try{ renderizarTodo(); }catch(e){ console.warn('Render pendiente:',e); }
+    }
+    console.log('📥 Marcadores actualizados desde Firebase');
+  }, e=>console.error('Error escuchando partidos:',e));
+}
+
 
 function cargarDatos(){
   try{
@@ -2559,7 +2605,7 @@ function abrirPolla(){
     const rango = PLL_MIN_POR_GRUPO===PLL_MAX_POR_GRUPO
       ? `<span class="destacado">${PLL_MIN_POR_GRUPO} equipos</span>`
       : `entre <span class="destacado">${PLL_MIN_POR_GRUPO} y ${PLL_MAX_POR_GRUPO} equipos</span>`;
-    instr.innerHTML=`📋 <strong>¿Cómo jugar?</strong><br>Escoge ${rango} en cada grupo para poder pasar al siguiente, hasta completar <span class="destacado">${PLL_TOPE_TOTAL} equipos en total</span>. Gana quien acierte más equipos que clasifiquen.`;
+    instr.innerHTML=`📋 <strong>¿Cómo jugar?</strong><br>Escoge ${rango} en cada grupo para poder pasar al siguiente, hasta completar <span class="destacado">${PLL_TOPE_TOTAL} equipos en total</span>. 🏆 Para ganar debes acertar <span class="destacado">los ${PLL_TOPE_TOTAL} equipos exactos</span> que clasifiquen a la siguiente fase.`;
   }
   const totalEl=document.querySelector('#pll_contActual + .total');
   if(totalEl) totalEl.textContent='/'+PLL_TOPE_TOTAL;
@@ -2887,7 +2933,7 @@ function pllVerRanking(){
       <span class="ranking-nombre">${r.nombre}${r.esYo?'<span class="tag-yo">TÚ</span>':''}</span>
       <div class="ranking-aciertos">
         <div class="ranking-aciertos-n">${r.aciertos}</div>
-        <div class="ranking-aciertos-l">DE 32</div>
+        <div class="ranking-aciertos-l">DE ${PLL_TOPE_TOTAL}</div>
       </div>
     </div>`).join('');
   pllMostrarPantalla('ranking');
@@ -2961,6 +3007,7 @@ function admLogin(){
     activarAdminMode();
     admRenderClientes();
     admInitFiltros();
+    admRenderFiltrosOficinas();
   } else {
     msg.className='adm-msg error';
     msg.textContent='❌ Contraseña incorrecta. Pista: empieza con "admin"';
@@ -2974,6 +3021,7 @@ function admTab(tab,btn){
   if(tab==='clientes') admRenderClientes();
   if(tab==='apuestas') admRenderApuestas();
   if(tab==='config') admCargarConfigEnUI();
+  if(tab==='cargar') admRenderFiltrosOficinas();
   if(tab==='api'){
     const el=document.getElementById('apiKeyInput');
     if(el) el.value = apiKey||'';
@@ -3035,6 +3083,46 @@ function admLeerFiltros(){
     monto: document.getElementById('filtroMonto').checked,
     montoValor: parseFloat(document.getElementById('filtroMontoValor').value)||0,
   };
+}
+
+// Describir los filtros en texto legible
+const MESES_NOMBRE=['','Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+function describirFiltros(f){
+  const partes=[];
+  if(f.pagada) partes.push('al menos 1 pagada');
+  if(f.sinPend) partes.push('sin pendientes');
+  if(f.mes) partes.push(`pagó en ${MESES_NOMBRE[f.mesValor]} ${f.anioValor}`);
+  if(f.rango && f.rangoIni && f.rangoFin) partes.push(`pagó entre ${f.rangoIni} y ${f.rangoFin}`);
+  if(f.monto) partes.push(`pagó mínimo $${f.montoValor.toLocaleString('es-CO')}`);
+  return partes.length ? partes.join(' + ') : 'sin filtros';
+}
+
+// Mostrar el resumen de filtros aplicados por oficina
+async function admRenderFiltrosOficinas(){
+  const cont=document.getElementById('admFiltrosResumen');
+  if(!cont) return;
+  const oficinas=['Florencia','El Paujil','El Doncello','Cartagena del Chairá'];
+  const iconos={'Florencia':'🏙️','El Paujil':'🌿','El Doncello':'🌄','Cartagena del Chairá':'⛵'};
+  let html='';
+  for(const of of oficinas){
+    try{
+      const doc=await db.collection('config').doc('filtros_'+of).get();
+      if(doc.exists){
+        const d=doc.data();
+        const fecha=d.fecha?new Date(d.fecha).toLocaleDateString('es-CO',{day:'2-digit',month:'2-digit',year:'2-digit'}):'';
+        html+=`<div style="padding:8px 0;border-bottom:1px solid rgba(255,255,255,.05);font-size:13px">
+          <strong style="color:#fff">${iconos[of]} ${of}</strong><br>
+          <span style="color:var(--verde)">${d.descripcion}</span>
+          <span style="color:var(--gris)"> · ${d.activados||0} activados · ${fecha}</span>
+        </div>`;
+      } else {
+        html+=`<div style="padding:8px 0;border-bottom:1px solid rgba(255,255,255,.05);font-size:13px">
+          <strong style="color:var(--gris)">${iconos[of]} ${of}</strong> <span style="color:var(--gris)">— sin cargar aún</span>
+        </div>`;
+      }
+    }catch(e){}
+  }
+  cont.innerHTML=html;
 }
 
 // Evalúa si un servicio (conjunto de sus facturas) cumple los filtros
@@ -3160,7 +3248,20 @@ function admCargarExcelOficina(event, oficina){
         `• ${protegidos} protegidos (ya apostaron)<br>`+
         `• ${noCumplen} no cumplen los filtros<br>`+
         `${errores>0?'⚠️ '+errores+' con error':''}`;
+
+      // Guardar registro del filtro usado para esta oficina (con fecha)
+      try{
+        await db.collection('config').doc('filtros_'+oficina).set({
+          oficina: oficina,
+          filtros: filtros,
+          descripcion: describirFiltros(filtros),
+          activados: activados,
+          fecha: new Date().toISOString()
+        });
+      }catch(e){ console.error('Error guardando filtro oficina:',e); }
+
       admRenderClientes();
+      admRenderFiltrosOficinas();
       event.target.value='';
     }catch(err){
       msg.className='adm-msg error';
@@ -3184,15 +3285,60 @@ function admRenderClientes(){
   if(busca) lista=lista.filter(c=>c.cedula.toLowerCase().includes(busca)||(c.nombre||'').toLowerCase().includes(busca));
 
   const tabla=document.getElementById('admTablaClientes');
-  tabla.innerHTML=`<tr><th>Cédula</th><th>Nombre</th><th>Oficina</th><th>Valor</th><th>Estado</th></tr>`+
+  tabla.innerHTML=`<tr><th>Código</th><th>Nombre</th><th>Oficina</th><th>Estado</th><th></th></tr>`+
     lista.map(c=>`<tr>
       <td>${c.cedula}</td>
       <td>${c.nombre||'—'}</td>
-      <td>${c.oficina||'—'}</td>
-      <td>${c.valor?'$'+c.valor:'—'}</td>
+      <td style="font-size:12px">${c.oficina||'—'}</td>
       <td>${c.yaAposto?'<span class="adm-badge aposto">Ya apostó</span>':c.activa?'<span class="adm-badge activa">Activa</span>':'<span class="adm-badge inactiva">Inactiva</span>'}</td>
+      <td><button onclick="admEliminarCliente('${c.cedula}')" style="background:rgba(232,0,29,.12);border:1.5px solid rgba(232,0,29,.3);color:#FF6B6B;font-size:11px;font-weight:800;padding:6px 9px;border-radius:8px;cursor:pointer">🗑️</button></td>
     </tr>`).join('');
   if(!lista.length) tabla.innerHTML+='<tr><td colspan="5" style="text-align:center;padding:20px;color:var(--gris)">No hay clientes</td></tr>';
+}
+
+// Eliminar un cliente activo desde el admin (con confirmación)
+async function admEliminarCliente(cedula){
+  const c = pllClientesDemo[cedula];
+  if(!c) return;
+  const aviso = c.yaAposto
+    ? `⚠️ ${c.nombre} (${cedula}) YA HIZO su predicción.\nSi lo eliminas, se borra el cliente Y su predicción.\n\n¿Eliminar de todas formas?`
+    : `¿Eliminar a ${c.nombre} (${cedula})?\nNo podrá ingresar a la polla a menos que lo vuelvas a cargar.`;
+  if(!confirm(aviso)) return;
+  try{
+    await db.collection('clientes').doc(cedula).delete();
+    delete pllClientesDemo[cedula];
+    admRenderClientes();
+    admRenderApuestas();
+  }catch(e){
+    alert('❌ Error al eliminar. Revisa tu conexión.');
+    console.error(e);
+  }
+}
+
+// Eliminar TODOS los clientes de una oficina (en lote, rápido)
+async function admBorrarOficinaClientes(){
+  const oficina=document.getElementById('admBorrarOficina').value;
+  const msg=document.getElementById('admBorrarOficinaMsg');
+  if(!oficina){ msg.className='adm-msg error'; msg.textContent='⚠️ Elige una oficina primero'; return; }
+  const delOficina=Object.values(pllClientesDemo).filter(c=>c.oficina===oficina);
+  if(!delOficina.length){ msg.className='adm-msg ok'; msg.textContent=`No hay clientes en ${oficina}.`; return; }
+  if(!confirm(`¿Borrar los ${delOficina.length} clientes de ${oficina}?\n\n⚠️ Se borran TODOS, incluidos los que ya apostaron. Esta acción no se puede deshacer.`)) return;
+  msg.className='adm-msg ok'; msg.textContent='⏳ Borrando...';
+  let borrados=0, errores=0;
+  const TAM=400;
+  for(let i=0;i<delOficina.length;i+=TAM){
+    const lote=delOficina.slice(i,i+TAM);
+    try{
+      const batch=db.batch();
+      lote.forEach(c=>batch.delete(db.collection('clientes').doc(c.cedula)));
+      await batch.commit();
+      lote.forEach(c=>{ delete pllClientesDemo[c.cedula]; borrados++; });
+      msg.innerHTML=`⏳ Borrados ${borrados} de ${delOficina.length}...`;
+    }catch(e){ errores+=lote.length; console.error(e); }
+  }
+  msg.className='adm-msg ok';
+  msg.innerHTML=`✅ ${borrados} clientes de ${oficina} eliminados.${errores>0?'<br>⚠️ '+errores+' con error':''}`;
+  admRenderClientes();
 }
 
 // ── RENDER APUESTAS ───────────────────────────────────────────
@@ -3255,16 +3401,14 @@ async function admEliminarPrediccion(cedula){
 
 // ── CALCULAR GANADORES ────────────────────────────────────────
 function admCalcularGanadores(){
-  // Obtener los 32 clasificados reales desde la app principal
+  // Obtener los clasificados reales desde la app principal (los 32 de r32)
   let clasificadosReales=[];
-  if(typeof poblarR32==='function'){
-    // Recolectar de koPartidos.r32 los equipos presentes
-    const r32=koPartidos.r32||[];
-    r32.forEach(m=>{ if(m.local)clasificadosReales.push(m.local); if(m.visita)clasificadosReales.push(m.visita); });
-  }
+  const r32=koPartidos.r32||[];
+  r32.forEach(m=>{ if(m.local)clasificadosReales.push(m.local); if(m.visita)clasificadosReales.push(m.visita); });
+
   const result=document.getElementById('admGanadoresResult');
   if(clasificadosReales.length<32){
-    result.innerHTML='<div class="adm-msg error" style="display:block">⚠️ Todavía no están definidos los 32 clasificados. Espera a que termine la fase de grupos.</div>';
+    result.innerHTML='<div class="adm-msg error" style="display:block">⚠️ Todavía no están definidos los equipos clasificados. Espera a que termine la fase de grupos (o ve marcando los resultados).</div>';
     return;
   }
   // Por cada oficina, calcular aciertos de cada cliente
@@ -3272,17 +3416,31 @@ function admCalcularGanadores(){
   Object.values(pllClientesDemo).filter(c=>c.yaAposto&&c.prediccion).forEach(c=>{
     const misEquipos=Object.values(c.prediccion).flat();
     const aciertos=misEquipos.filter(e=>clasificadosReales.includes(e)).length;
+    const totalElegidos=misEquipos.length;
+    // Acertó TODOS sus equipos elegidos Y todos clasificaron
+    const acertoTodos = aciertos===totalElegidos && totalElegidos===PLL_TOPE_TOTAL;
     if(!oficinas[c.oficina])oficinas[c.oficina]=[];
-    oficinas[c.oficina].push({nombre:c.nombre,cedula:c.cedula,aciertos});
+    oficinas[c.oficina].push({nombre:c.nombre,cedula:c.cedula,aciertos,totalElegidos,acertoTodos});
   });
+
+  if(Object.keys(oficinas).length===0){
+    result.innerHTML='<div class="adm-msg" style="display:block;background:rgba(160,180,204,.1);color:var(--gris)">Aún no hay predicciones para evaluar.</div>';
+    return;
+  }
+
   result.innerHTML=Object.entries(oficinas).map(([of,clientes])=>{
     clientes.sort((a,b)=>b.aciertos-a.aciertos);
-    const max=clientes[0].aciertos;
-    const ganadores=clientes.filter(c=>c.aciertos===max);
-    return `<div class="adm-card"><h3>${of}</h3>
-      <p>🏆 Ganador(es) con ${max}/32 aciertos:</p>
-      ${ganadores.map(g=>`<div style="font-size:16px;font-weight:800;color:var(--verde);padding:6px 0">✅ ${g.nombre} (${g.cedula})</div>`).join('')}
-    </div>`;
+    const ganadoresExactos=clientes.filter(c=>c.acertoTodos);
+    let html=`<div class="adm-card"><h3>${of}</h3>`;
+    if(ganadoresExactos.length>0){
+      html+=`<p>🏆 ¡GANADOR(ES)! Acertaron los ${PLL_TOPE_TOTAL} equipos exactos:</p>`;
+      html+=ganadoresExactos.map(g=>`<div style="font-size:17px;font-weight:900;color:var(--oro);padding:6px 0">🏆 ${g.nombre} (${g.cedula})</div>`).join('');
+    } else {
+      html+=`<p style="color:var(--gris)">Nadie acertó los ${PLL_TOPE_TOTAL} exactos todavía. Los más cercanos:</p>`;
+      html+=clientes.slice(0,5).map((g,i)=>`<div style="font-size:14px;font-weight:700;color:var(--texto2);padding:4px 0">${i+1}. ${g.nombre} — ${g.aciertos}/${PLL_TOPE_TOTAL} aciertos</div>`).join('');
+    }
+    html+=`</div>`;
+    return html;
   }).join('');
 }
 
@@ -3453,6 +3611,8 @@ async function cargarPolla(){
   });
 }
 cargarPolla();
+// Activar la escucha de marcadores en tiempo real (todos los dispositivos)
+escucharPartidosFB();
 
 </script>
 
@@ -3658,6 +3818,11 @@ cargarPolla();
         <div class="adm-msg" id="admCargarMsg"></div>
       </div>
       <div class="adm-card">
+        <h3>📊 Filtros aplicados por oficina</h3>
+        <p style="margin-bottom:8px">Esto recuerda qué filtro usaste en cada oficina y cuándo. Cada oficina es independiente.</p>
+        <div id="admFiltrosResumen"><div style="color:var(--gris);font-size:13px">Cargando...</div></div>
+      </div>
+      <div class="adm-card">
         <h3>📋 Cómo lee tu Excel</h3>
         <p>El sistema detecta automáticamente las columnas de tu reporte: <strong>Usuario</strong> (para el código del servicio), <strong>Cliente</strong> (nombre), <strong>Estado</strong> (Pagada/Pendiente), <strong>Fecha Pago</strong>, <strong>Total Cobrado</strong> y <strong>Telefono</strong>. Las <strong>Canceladas</strong> se ignoran. El cliente ingresará con su código corto (ej: <strong>1117531505</strong> o <strong>5516795-3</strong>).</p>
       </div>
@@ -3745,7 +3910,7 @@ cargarPolla();
       </div>
       <div class="adm-card">
         <h3>📌 Cómo funciona</h3>
-        <p>• El cliente elige libremente entre el mínimo y el máximo por grupo.<br>• Debe completar exactamente el total que fijaste para poder confirmar.<br>• Gana quien acierte más equipos de los que realmente clasifiquen.<br>• <strong>Cámbialo antes de que empiecen a apostar</strong> — si ya hay apuestas, cambiar esto puede descuadrar las predicciones existentes.</p>
+        <p>• El cliente elige libremente entre el mínimo y el máximo por grupo.<br>• Debe completar exactamente el total que fijaste para poder confirmar.<br>• 🏆 Gana quien acierte TODOS los equipos exactos que clasifiquen (no el que más tenga).<br>• <strong>Cámbialo antes de que empiecen a apostar</strong> — si ya hay apuestas, cambiar esto puede descuadrar las predicciones existentes.</p>
       </div>
     </div>
 
@@ -3763,6 +3928,20 @@ cargarPolla();
           <button class="btn-api" style="flex:1;min-width:140px;background:rgba(232,0,29,.12);border:2px solid rgba(232,0,29,.3);color:#FF6B6B" onclick="admBorrarUsuariosPrueba()">🗑️ Borrar todos los de prueba</button>
         </div>
         <div class="adm-msg" id="admPruebaMsg"></div>
+      </div>
+
+      <div class="adm-card" style="padding:14px;margin-bottom:12px">
+        <h3 style="font-size:15px;margin-bottom:8px">🗑️ Borrar clientes por oficina</h3>
+        <p style="font-size:13px;margin-bottom:10px">Elimina TODOS los clientes de una oficina (por ejemplo para recargar el Excel desde cero).</p>
+        <select id="admBorrarOficina" class="adm-mini-input" style="width:100%;margin-bottom:10px">
+          <option value="">— Elige una oficina —</option>
+          <option value="Florencia">🏙️ Florencia</option>
+          <option value="El Paujil">🌿 El Paujil</option>
+          <option value="El Doncello">🌄 El Doncello</option>
+          <option value="Cartagena del Chairá">⛵ Cartagena del Chairá</option>
+        </select>
+        <button class="btn-api" style="width:100%;background:rgba(232,0,29,.12);border:2px solid rgba(232,0,29,.3);color:#FF6B6B" onclick="admBorrarOficinaClientes()">🗑️ Borrar todos los de esta oficina</button>
+        <div class="adm-msg" id="admBorrarOficinaMsg"></div>
       </div>
       <input class="adm-buscar" id="admBuscarCliente" placeholder="🔍 Buscar por cédula o nombre" oninput="admRenderClientes()">
       <div class="adm-card" style="padding:12px">
