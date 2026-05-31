@@ -3096,30 +3096,51 @@ function admCargarExcelOficina(event, oficina){
         servicios[codigo].facturas.push({estado, fechaPago, valor, factura});
       }
 
-      // 2) Filtrar y guardar
+      // 2) Filtrar y guardar (OPTIMIZADO: lee existentes una vez + escribe en lote)
       let activados=0, protegidos=0, noCumplen=0, errores=0;
+
+      // Cargar TODOS los clientes existentes de una sola vez (en vez de uno por uno)
+      msg.innerHTML=`⏳ Leyendo registros existentes...`;
+      const existentes = await cargarTodosClientesFB();
+
+      // Preparar los que se van a guardar
+      const aGuardar = [];
       for(const codigo of Object.keys(servicios)){
         const s = servicios[codigo];
-        const cumple = servicioCumpleFiltros(s.facturas, filtros);
-        if(!cumple){ noCumplen++; continue; }
-
-        const existente = await buscarClienteFB(codigo);
-        if(existente && existente.yaAposto){ protegidos++; continue; }
-
-        const clienteData = {
-          cedula: codigo,                 // el código corto ES el identificador de ingreso
-          documento: s.cedula,            // cédula real (informativa)
+        if(!servicioCumpleFiltros(s.facturas, filtros)){ noCumplen++; continue; }
+        const ex = existentes[codigo];
+        if(ex && ex.yaAposto){ protegidos++; continue; }
+        aGuardar.push({
+          cedula: codigo,
+          documento: s.cedula,
           nombre: s.nombre||'Cliente',
           telefono: s.tel,
           oficina: oficina,
           activa: true,
-          yaAposto: existente ? existente.yaAposto : false,
-          prediccion: existente ? existente.prediccion : null,
+          yaAposto: ex ? ex.yaAposto : false,
+          prediccion: ex ? ex.prediccion : null,
           actualizado: new Date().toISOString()
-        };
-        const ok = await guardarClienteFB(clienteData);
-        if(ok){ activados++; pllClientesDemo[codigo]=clienteData; }
-        else { errores++; }
+        });
+      }
+
+      // Escribir en lotes de 400 (límite Firestore: 500 por batch)
+      msg.innerHTML=`⏳ Guardando ${aGuardar.length} servicios...`;
+      const TAM=400;
+      for(let i=0;i<aGuardar.length;i+=TAM){
+        const lote = aGuardar.slice(i,i+TAM);
+        try{
+          const batch = db.batch();
+          lote.forEach(cl=>{
+            const ref = db.collection('clientes').doc(cl.cedula);
+            batch.set(ref, cl);
+          });
+          await batch.commit();
+          lote.forEach(cl=>{ pllClientesDemo[cl.cedula]=cl; activados++; });
+          msg.innerHTML=`⏳ Guardados ${activados} de ${aGuardar.length}...`;
+        }catch(e){
+          errores += lote.length;
+          console.error('Error en lote:',e);
+        }
       }
 
       msg.className='adm-msg ok';
