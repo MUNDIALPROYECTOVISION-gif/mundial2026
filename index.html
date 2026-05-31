@@ -677,6 +677,9 @@ body.es-admin .admin-only{display:block;}
 #adminApp .adm-card h3{font-size:18px;font-weight:900;color:var(--oro);margin-bottom:12px;}
 #adminApp .adm-card p{font-size:14px;color:var(--gris);line-height:1.6;margin-bottom:14px;}
 #adminApp .adm-file-label{display:block;width:100%;padding:16px;background:rgba(0,194,255,.08);border:2px dashed rgba(0,194,255,.4);border-radius:14px;color:#00C2FF;font-size:15px;font-weight:800;text-align:center;cursor:pointer;margin-bottom:12px;}
+#adminApp .adm-check{display:flex;align-items:center;gap:10px;padding:9px 0;font-size:14px;font-weight:700;color:#fff;cursor:pointer;}
+#adminApp .adm-check input{width:20px;height:20px;accent-color:var(--verde);cursor:pointer;flex-shrink:0;}
+#adminApp .adm-mini-input{padding:9px 12px;background:rgba(255,255,255,.06);border:1.5px solid rgba(255,255,255,.18);border-radius:10px;color:#fff;font-family:'Nunito',sans-serif;font-size:15px;font-weight:700;outline:none;margin-right:8px;}
 #adminApp .adm-oficina-sel{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;}
 #adminApp .adm-of-btn{padding:12px;background:rgba(0,194,255,.06);border:2px solid rgba(0,194,255,.2);border-radius:12px;color:#fff;font-size:14px;font-weight:800;cursor:pointer;}
 #adminApp .adm-of-btn.sel{background:rgba(0,200,83,.15);border-color:var(--verde);}
@@ -1717,14 +1720,32 @@ const API_TEAM_MAP = {
 function guardarApiKey(){
   apiKey = document.getElementById('apiKeyInput').value.trim();
   localStorage.setItem('mundial2026_apikey', apiKey);
+  // Guardar también en Firebase para que quede permanente (todos los dispositivos)
+  if(FB_OK){
+    db.collection('config').doc('api').set({apiKey, actualizado:new Date().toISOString()})
+      .then(()=>console.log('🔑 API Key guardada en Firebase'))
+      .catch(e=>console.error('Error guardando API key:',e));
+  }
   if(apiKey) iniciarAutoSync();
   else detenerAutoSync();
 }
 
-function cargarApiKey(){
-  const k = localStorage.getItem('mundial2026_apikey') || '';
+async function cargarApiKeyFB(){
+  if(!FB_OK) return '';
+  try{
+    const doc = await db.collection('config').doc('api').get();
+    if(doc.exists && doc.data().apiKey) return doc.data().apiKey;
+  }catch(e){ console.error('Error cargando API key FB:',e); }
+  return '';
+}
+
+async function cargarApiKey(){
+  // Prioridad: Firebase (permanente) → localStorage (respaldo)
+  let k = await cargarApiKeyFB();
+  if(!k) k = localStorage.getItem('mundial2026_apikey') || '';
   apiKey = k;
   if(k){
+    localStorage.setItem('mundial2026_apikey', k);
     const el = document.getElementById('apiKeyInput');
     if(el) el.value = k;
     iniciarAutoSync();
@@ -2938,6 +2959,7 @@ function admLogin(){
     document.getElementById('admPanel').style.display='block';
     activarAdminMode();
     admRenderClientes();
+    admInitFiltros();
   } else {
     msg.className='adm-msg error';
     msg.textContent='❌ Contraseña incorrecta. Pista: empieza con "admin"';
@@ -2958,11 +2980,95 @@ function admTab(tab,btn){
   }
 }
 
-// ── CARGAR EXCEL ──────────────────────────────────────────────
+// ── CARGAR EXCEL (con filtros y agrupación por servicio) ──────
+// Mostrar/ocultar los sub-campos de cada filtro
+function admInitFiltros(){
+  const pares=[['filtroMes','filtroMesBox'],['filtroRango','filtroRangoBox'],['filtroMonto','filtroMontoBox']];
+  pares.forEach(([chk,box])=>{
+    const c=document.getElementById(chk), b=document.getElementById(box);
+    if(c && b && !c._wired){
+      c._wired=true;
+      c.addEventListener('change',()=>{ b.style.display=c.checked?'block':'none'; });
+    }
+  });
+}
+// Helpers de columnas flexibles
+function colVal(fila, nombres){
+  for(const n of nombres){
+    for(const k of Object.keys(fila)){
+      if(k.trim().toLowerCase()===n.toLowerCase()) return String(fila[k]).trim();
+    }
+  }
+  return '';
+}
+// Extraer código corto del usuario: '1117531505proyectovision@...' -> '1117531505', '5516795-3proy...' -> '5516795-3'
+function codigoServicio(usuario){
+  const m = String(usuario).trim().match(/^(\d+(?:-\d+)?)/);
+  return m ? m[1] : '';
+}
+// Limpiar nombre: 'OLGA LUCIA ORTIZ 1 (CASA)' -> 'OLGA LUCIA ORTIZ'
+function limpiarNombre(n){
+  let s = String(n).replace(/\s*\([^)]*\)\s*$/,'');  // quitar (...)
+  s = s.replace(/\s+\d+\s*$/,'');                       // quitar número final
+  return s.trim();
+}
+// Parsear fecha "01/06/2026 08:30" o "01/06/2026" -> Date
+function parseFechaPago(s){
+  if(!s) return null;
+  const parte = String(s).split(' ')[0];
+  const m = parte.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+  if(!m) return null;
+  return new Date(parseInt(m[3]), parseInt(m[2])-1, parseInt(m[1]));
+}
+
+function admLeerFiltros(){
+  return {
+    pagada: document.getElementById('filtroPagada').checked,
+    sinPend: document.getElementById('filtroSinPend').checked,
+    mes: document.getElementById('filtroMes').checked,
+    mesValor: parseInt(document.getElementById('filtroMesValor').value),
+    anioValor: parseInt(document.getElementById('filtroAnioValor').value),
+    rango: document.getElementById('filtroRango').checked,
+    rangoIni: document.getElementById('filtroRangoIni').value,
+    rangoFin: document.getElementById('filtroRangoFin').value,
+    monto: document.getElementById('filtroMonto').checked,
+    montoValor: parseFloat(document.getElementById('filtroMontoValor').value)||0,
+  };
+}
+
+// Evalúa si un servicio (conjunto de sus facturas) cumple los filtros
+function servicioCumpleFiltros(facturas, f){
+  // Ignorar canceladas siempre
+  const activas = facturas.filter(x => !/cancelad/i.test(x.estado));
+  if(activas.length===0) return false;
+
+  const pagadas = activas.filter(x => /pagad/i.test(x.estado));
+  const pendientes = activas.filter(x => /pendiente/i.test(x.estado));
+
+  if(f.pagada && pagadas.length===0) return false;
+  if(f.sinPend && pendientes.length>0) return false;
+
+  if(f.mes){
+    const ok = pagadas.some(x=>{ const d=parseFechaPago(x.fechaPago); return d && d.getMonth()+1===f.mesValor && d.getFullYear()===f.anioValor; });
+    if(!ok) return false;
+  }
+  if(f.rango && f.rangoIni && f.rangoFin){
+    const ini=new Date(f.rangoIni), fin=new Date(f.rangoFin);
+    const ok = pagadas.some(x=>{ const d=parseFechaPago(x.fechaPago); return d && d>=ini && d<=fin; });
+    if(!ok) return false;
+  }
+  if(f.monto){
+    const totalPagado = pagadas.reduce((s,x)=> s + (parseFloat(String(x.valor).replace(/[^\d.]/g,''))||0), 0);
+    if(totalPagado < f.montoValor) return false;
+  }
+  return true;
+}
+
 function admCargarExcelOficina(event, oficina){
   const file=event.target.files[0];
   const msg=document.getElementById('admCargarMsg');
   if(!file) return;
+  const filtros = admLeerFiltros();
   msg.className='adm-msg ok';
   msg.textContent=`⏳ Procesando Excel de ${oficina}...`;
   const reader=new FileReader();
@@ -2972,40 +3078,58 @@ function admCargarExcelOficina(event, oficina){
       const wb=XLSX.read(data,{type:'array'});
       const sheet=wb.Sheets[wb.SheetNames[0]];
       const filas=XLSX.utils.sheet_to_json(sheet,{defval:''});
-      let nuevas=0, reactivadas=0, protegidas=0, errores=0;
 
+      // 1) Agrupar facturas por código de servicio
+      const servicios = {}; // codigo -> {nombre, tel, cedula, facturas:[]}
       for(const fila of filas){
-        const ced=String(fila['Cédula']||fila['Cedula']||fila['cedula']||fila['CEDULA']||fila['Documento']||'').trim();
-        const nombre=String(fila['Nombre']||fila['nombre']||fila['NOMBRE']||'').trim();
-        const tel=String(fila['Teléfono']||fila['Telefono']||fila['telefono']||fila['Celular']||'').trim();
-        const factura=String(fila['Factura']||fila['factura']||fila['FACTURA']||'').trim();
-        const valor=String(fila['Valor Pagado']||fila['Valor']||fila['valor']||fila['VALOR']||'').trim();
-        if(!ced) continue;
+        const usuario = colVal(fila, ['Usuario','usuario']);
+        const codigo = codigoServicio(usuario);
+        if(!codigo) continue;
+        const nombre = colVal(fila, ['Cliente','cliente','Nombre']);
+        const tel = colVal(fila, ['Telefono','Teléfono','telefono','Celular']);
+        const cedula = colVal(fila, ['DNI/C.I./C.C./IFE','Cédula','Cedula','cedula','Documento','DNI']);
+        const estado = colVal(fila, ['Estado','estado']);
+        const fechaPago = colVal(fila, ['Fecha Pago','fecha pago','FechaPago']);
+        const valor = colVal(fila, ['Total Cobrado','total cobrado','Valor Pagado','Valor','valor']);
+        const factura = colVal(fila, ['#Factura','Factura','factura']);
+        if(!servicios[codigo]) servicios[codigo]={codigo, nombre:limpiarNombre(nombre), tel, cedula, facturas:[]};
+        servicios[codigo].facturas.push({estado, fechaPago, valor, factura});
+      }
 
-        const existente = await buscarClienteFB(ced);
-        if(existente && existente.yaAposto){
-          protegidas++;
-          continue;
-        }
+      // 2) Filtrar y guardar
+      let activados=0, protegidos=0, noCumplen=0, errores=0;
+      for(const codigo of Object.keys(servicios)){
+        const s = servicios[codigo];
+        const cumple = servicioCumpleFiltros(s.facturas, filtros);
+        if(!cumple){ noCumplen++; continue; }
+
+        const existente = await buscarClienteFB(codigo);
+        if(existente && existente.yaAposto){ protegidos++; continue; }
+
         const clienteData = {
-          cedula:ced, nombre:nombre||'Cliente', telefono:tel,
-          factura:factura, valor:valor, oficina:oficina,
-          activa:true,
+          cedula: codigo,                 // el código corto ES el identificador de ingreso
+          documento: s.cedula,            // cédula real (informativa)
+          nombre: s.nombre||'Cliente',
+          telefono: s.tel,
+          oficina: oficina,
+          activa: true,
           yaAposto: existente ? existente.yaAposto : false,
           prediccion: existente ? existente.prediccion : null,
           actualizado: new Date().toISOString()
         };
         const ok = await guardarClienteFB(clienteData);
-        if(ok){
-          if(existente) reactivadas++; else nuevas++;
-          pllClientesDemo[ced] = clienteData;
-        } else { errores++; }
+        if(ok){ activados++; pllClientesDemo[codigo]=clienteData; }
+        else { errores++; }
       }
 
       msg.className='adm-msg ok';
-      msg.innerHTML=`✅ <strong>${oficina}</strong> procesado:<br>• ${nuevas} clientes nuevos<br>• ${reactivadas} actualizados<br>• ${protegidas} protegidos (ya apostaron)${errores>0?'<br>⚠️ '+errores+' con error':''}`;
+      msg.innerHTML=`✅ <strong>${oficina}</strong> procesado:<br>`+
+        `• ${activados} servicios activados<br>`+
+        `• ${protegidos} protegidos (ya apostaron)<br>`+
+        `• ${noCumplen} no cumplen los filtros<br>`+
+        `${errores>0?'⚠️ '+errores+' con error':''}`;
       admRenderClientes();
-      event.target.value=''; // limpiar para poder recargar el mismo archivo
+      event.target.value='';
     }catch(err){
       msg.className='adm-msg error';
       msg.textContent='❌ Error al leer el Excel. Verifica el formato.';
@@ -3416,32 +3540,51 @@ cargarPolla();
     <div class="adm-seccion activa" id="admSec-cargar">
       <div class="adm-card">
         <h3>📤 Cargar Excel por Oficina</h3>
-        <p>Sube el Excel de cada oficina por separado. Columnas: <strong>Cédula, Nombre, Teléfono, Factura, Valor Pagado</strong>. (La oficina se asigna según el botón que uses, no necesita columna Oficina). Las cédulas que ya apostaron NO se reactivan.</p>
+        <p>1️⃣ Marca los filtros de activación, 2️⃣ elige la oficina y sube su Excel. El sistema agrupa por <strong>servicio</strong> (cada cédula-1, cédula-2 cuenta aparte). Los que ya apostaron quedan protegidos.</p>
 
+        <div style="background:rgba(0,194,255,.05);border:1.5px solid rgba(0,194,255,.2);border-radius:12px;padding:14px;margin-bottom:14px">
+          <div style="font-size:14px;font-weight:800;color:#00C2FF;margin-bottom:10px">🎛️ Filtros de activación (se activan los que cumplan TODO lo marcado)</div>
+
+          <label class="adm-check"><input type="checkbox" id="filtroPagada" checked> ✅ Al menos 1 factura pagada</label>
+          <label class="adm-check"><input type="checkbox" id="filtroSinPend"> 🚫 Sin facturas pendientes (totalmente al día)</label>
+          <label class="adm-check"><input type="checkbox" id="filtroMes"> 📅 Pagó en un mes específico</label>
+          <div id="filtroMesBox" style="display:none;padding:8px 0 8px 28px">
+            <select id="filtroMesValor" class="adm-mini-input">
+              <option value="1">Enero</option><option value="2">Febrero</option><option value="3">Marzo</option>
+              <option value="4">Abril</option><option value="5">Mayo</option><option value="6" selected>Junio</option>
+              <option value="7">Julio</option><option value="8">Agosto</option><option value="9">Septiembre</option>
+              <option value="10">Octubre</option><option value="11">Noviembre</option><option value="12">Diciembre</option>
+            </select>
+            <select id="filtroAnioValor" class="adm-mini-input"><option value="2026" selected>2026</option><option value="2025">2025</option></select>
+          </div>
+          <label class="adm-check"><input type="checkbox" id="filtroRango"> 📆 Pagó en un rango de fechas</label>
+          <div id="filtroRangoBox" style="display:none;padding:8px 0 8px 28px">
+            <div style="font-size:12px;color:var(--gris);margin-bottom:4px">Desde:</div>
+            <input type="date" id="filtroRangoIni" class="adm-mini-input">
+            <div style="font-size:12px;color:var(--gris);margin:6px 0 4px">Hasta:</div>
+            <input type="date" id="filtroRangoFin" class="adm-mini-input">
+          </div>
+          <label class="adm-check"><input type="checkbox" id="filtroMonto"> 💰 Pagó monto mínimo</label>
+          <div id="filtroMontoBox" style="display:none;padding:8px 0 8px 28px">
+            <input type="number" id="filtroMontoValor" class="adm-mini-input" placeholder="Ej: 20000" value="20000">
+          </div>
+        </div>
+
+        <div style="font-size:13px;color:var(--gris);margin-bottom:8px">2️⃣ Elige la oficina y sube su Excel:</div>
         <label class="adm-file-label" for="admExcel-florencia">🏙️ Cargar Excel — Florencia</label>
         <input type="file" id="admExcel-florencia" accept=".xlsx,.xls,.csv" style="display:none" onchange="admCargarExcelOficina(event,'Florencia')">
-
         <label class="adm-file-label" for="admExcel-paujil">🌿 Cargar Excel — El Paujil</label>
         <input type="file" id="admExcel-paujil" accept=".xlsx,.xls,.csv" style="display:none" onchange="admCargarExcelOficina(event,'El Paujil')">
-
         <label class="adm-file-label" for="admExcel-doncello">🌄 Cargar Excel — El Doncello</label>
         <input type="file" id="admExcel-doncello" accept=".xlsx,.xls,.csv" style="display:none" onchange="admCargarExcelOficina(event,'El Doncello')">
-
         <label class="adm-file-label" for="admExcel-cartagena">⛵ Cargar Excel — Cartagena del Chairá</label>
         <input type="file" id="admExcel-cartagena" accept=".xlsx,.xls,.csv" style="display:none" onchange="admCargarExcelOficina(event,'Cartagena del Chairá')">
 
         <div class="adm-msg" id="admCargarMsg"></div>
       </div>
       <div class="adm-card">
-        <h3>📋 Formato esperado del Excel</h3>
-        <p>El archivo de cada oficina debe tener estas columnas (el orden no importa):</p>
-        <div class="adm-tabla-wrap">
-          <table class="adm-tabla">
-            <tr><th>Cédula</th><th>Nombre</th><th>Teléfono</th><th>Factura</th><th>Valor Pagado</th></tr>
-            <tr><td>1117XXX</td><td>Juan Pérez</td><td>320...</td><td>F-001</td><td>45000</td></tr>
-            <tr><td>1118XXX</td><td>Ana Gómez</td><td>318...</td><td>F-002</td><td>52000</td></tr>
-          </table>
-        </div>
+        <h3>📋 Cómo lee tu Excel</h3>
+        <p>El sistema detecta automáticamente las columnas de tu reporte: <strong>Usuario</strong> (para el código del servicio), <strong>Cliente</strong> (nombre), <strong>Estado</strong> (Pagada/Pendiente), <strong>Fecha Pago</strong>, <strong>Total Cobrado</strong> y <strong>Telefono</strong>. Las <strong>Canceladas</strong> se ignoran. El cliente ingresará con su código corto (ej: <strong>1117531505</strong> o <strong>5516795-3</strong>).</p>
       </div>
     </div>
 
