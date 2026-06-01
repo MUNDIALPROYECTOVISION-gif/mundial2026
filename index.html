@@ -702,6 +702,50 @@ body.es-admin .admin-only{display:block;}
 .adm-acceso-btn{position:fixed;bottom:16px;right:16px;z-index:7000;width:40px;height:40px;border-radius:50%;background:rgba(20,20,40,.6);border:1.5px solid rgba(255,215,0,.4);color:rgba(255,215,0,.7);font-size:17px;cursor:pointer;box-shadow:0 2px 10px rgba(0,0,0,.4);opacity:.55;transition:opacity .2s;}
 .adm-acceso-btn:active{opacity:1;}
 
+
+/* ════ POLLA ENTRE AMIGOS (local, en este dispositivo) ════ */
+#amigosApp{position:fixed;inset:0;z-index:5500;background:var(--fondo);overflow-y:auto;-webkit-overflow-scrolling:touch;display:none;}
+#amigosApp.activo{display:block;}
+#amigosApp .am-cab{position:sticky;top:0;z-index:100;background:rgba(8,24,48,.97);backdrop-filter:blur(20px);border-bottom:3px solid var(--verde);padding:14px 18px;display:flex;align-items:center;gap:12px;}
+#amigosApp .am-cab-cerrar{margin-left:auto;background:rgba(255,255,255,.1);border:none;color:#fff;font-size:18px;width:40px;height:40px;border-radius:50%;cursor:pointer;font-weight:900;}
+#amigosApp .am-main{padding:16px;max-width:680px;margin:0 auto;padding-bottom:calc(40px + env(safe-area-inset-bottom));}
+#amigosApp .am-card{background:var(--tarjeta);border:2px solid var(--borde);border-radius:18px;padding:18px;margin-bottom:14px;}
+#amigosApp .am-card h3{font-size:17px;font-weight:900;color:var(--verde);margin-bottom:10px;}
+#amigosApp .am-jug-grid{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px;}
+#amigosApp .am-jug-chip{display:flex;align-items:center;gap:7px;background:rgba(0,200,83,.1);border:2px solid rgba(0,200,83,.3);border-radius:30px;padding:7px 14px;font-size:14px;font-weight:800;color:#fff;}
+#amigosApp .am-jug-chip .am-jug-pts{background:var(--verde);color:#001;border-radius:20px;padding:1px 8px;font-size:12px;}
+#amigosApp .am-jug-chip .am-jug-del{cursor:pointer;color:#FF6B6B;font-size:16px;font-weight:900;}
+#amigosApp .am-input{width:100%;padding:14px;background:rgba(0,200,83,.06);border:2px solid rgba(0,200,83,.3);border-radius:12px;color:#fff;font-family:'Nunito',sans-serif;font-size:16px;font-weight:700;outline:none;}
+#amigosApp .am-btn{width:100%;padding:14px;background:linear-gradient(135deg,var(--verde),#00A847);border:none;border-radius:12px;color:#001;font-family:'Nunito',sans-serif;font-size:16px;font-weight:900;cursor:pointer;margin-top:10px;}
+#amigosApp .am-btn:active{transform:scale(.98);}
+#amigosApp .am-partido{background:var(--tarjeta);border:2px solid var(--borde);border-radius:16px;padding:14px;margin-bottom:12px;}
+#amigosApp .am-part-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+#amigosApp .am-part-equipos{display:flex;align-items:center;gap:8px;font-size:15px;font-weight:800;}
+#amigosApp .am-part-equipos img{width:30px;height:20px;border-radius:3px;object-fit:cover;}
+#amigosApp .am-part-marcador{font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--oro);}
+#amigosApp .am-part-estado{font-size:11px;font-weight:800;padding:3px 8px;border-radius:8px;}
+#amigosApp .am-part-estado.live{background:rgba(232,0,29,.15);color:#FF6B6B;}
+#amigosApp .am-part-estado.fin{background:rgba(0,200,83,.15);color:var(--verde);}
+#amigosApp .am-part-estado.prox{background:rgba(160,180,204,.12);color:var(--gris);}
+#amigosApp .am-pred-jug{padding:10px 0;border-top:1px solid rgba(255,255,255,.06);}
+#amigosApp .am-pred-jug-nombre{font-size:13px;font-weight:800;color:var(--texto2);margin-bottom:6px;}
+#amigosApp .am-opciones{display:flex;gap:6px;}
+#amigosApp .am-opcion{flex:1;padding:9px 4px;background:rgba(255,255,255,.04);border:2px solid rgba(255,255,255,.12);border-radius:10px;font-size:12px;font-weight:800;color:var(--gris);cursor:pointer;text-align:center;transition:all .15s;}
+#amigosApp .am-opcion.sel{background:rgba(0,200,83,.2);border-color:var(--verde);color:#fff;}
+#amigosApp .am-opcion.acierto{background:rgba(0,200,83,.3);border-color:var(--verde);color:#fff;}
+#amigosApp .am-opcion.fallo{background:rgba(232,0,29,.15);border-color:rgba(232,0,29,.4);color:#FF6B6B;opacity:.6;}
+#amigosApp .am-pred-resultado{font-size:11px;font-weight:800;margin-top:5px;}
+#amigosApp .am-rank-fila{display:flex;align-items:center;gap:12px;padding:12px;background:var(--tarjeta);border:2px solid var(--borde);border-radius:12px;margin-bottom:8px;}
+#amigosApp .am-rank-pos{font-family:'Bebas Neue',sans-serif;font-size:24px;width:36px;text-align:center;color:var(--oro);}
+#amigosApp .am-rank-nombre{flex:1;font-size:16px;font-weight:800;}
+#amigosApp .am-rank-pts{font-family:'Bebas Neue',sans-serif;font-size:26px;color:var(--verde);}
+#amigosApp .am-tabs{display:flex;gap:8px;margin-bottom:16px;}
+#amigosApp .am-tab{flex:1;padding:11px;background:transparent;border:2px solid rgba(255,255,255,.12);color:var(--gris);font-family:'Nunito',sans-serif;font-size:14px;font-weight:800;border-radius:25px;cursor:pointer;}
+#amigosApp .am-tab.activo{background:rgba(0,200,83,.15);border-color:var(--verde);color:#fff;}
+#amigosApp .am-sec{display:none;}
+#amigosApp .am-sec.activa{display:block;}
+#amigosApp .am-vacio{text-align:center;padding:30px;color:var(--gris);font-size:14px;line-height:1.6;}
+
 </style>
 </head>
 <body>
@@ -954,6 +998,14 @@ body.es-admin .admin-only{display:block;}
         <div style="font-size:20px;font-weight:900;color:var(--oro);margin-bottom:6px">Polla de Clasificados</div>
         <div style="font-size:15px;color:var(--texto2);line-height:1.6;margin-bottom:14px">Concurso por oficina para tus clientes. Ingresan con su código y predicen qué equipos clasifican a la siguiente fase. ¡Premio por oficina!</div>
         <button onclick="abrirPolla()" style="width:100%;padding:16px;background:linear-gradient(135deg,var(--oro),#FFA500);border:none;border-radius:14px;color:var(--azul);font-family:'Nunito',sans-serif;font-size:18px;font-weight:900;cursor:pointer;">🎫 ABRIR POLLA DE CLASIFICADOS</button>
+      </div>
+
+      <!-- ENTRADA POLLA ENTRE AMIGOS -->
+      <div style="background:linear-gradient(135deg,rgba(0,200,83,.15),rgba(0,31,91,.6));border:2px solid var(--verde);border-radius:18px;padding:20px;margin-bottom:16px;text-align:center;">
+        <div style="font-size:40px;margin-bottom:8px">👨‍👩‍👧‍👦</div>
+        <div style="font-size:20px;font-weight:900;color:var(--verde);margin-bottom:6px">Polla entre Amigos</div>
+        <div style="font-size:15px;color:var(--texto2);line-height:1.6;margin-bottom:14px">Juega con tu familia y amigos en este mismo celular. Cada uno predice si gana, empata o pierde cada partido. ¡La app lleva el puntaje!</div>
+        <button onclick="abrirAmigos()" style="width:100%;padding:16px;background:linear-gradient(135deg,var(--verde),#00A847);border:none;border-radius:14px;color:#001;font-family:'Nunito',sans-serif;font-size:18px;font-weight:900;cursor:pointer;">👨‍👩‍👧‍👦 JUGAR ENTRE AMIGOS</button>
       </div>
 
       <!-- RANKING GENERAL -->
@@ -3614,7 +3666,246 @@ cargarPolla();
 // Activar la escucha de marcadores en tiempo real (todos los dispositivos)
 escucharPartidosFB();
 
+
+// ════════════════════════════════════════════════════════════════
+// POLLA ENTRE AMIGOS (local, guardada solo en este dispositivo)
+// ════════════════════════════════════════════════════════════════
+const AM_KEY = 'mundial2026_amigos';
+let amJugadores = [];   // [{id, nombre}]
+let amPredicciones = {}; // { 'jugadorId_partidoId': 'local'|'empate'|'visita' }
+
+function amCargar(){
+  try{
+    const d = JSON.parse(localStorage.getItem(AM_KEY)||'{}');
+    amJugadores = d.jugadores || [];
+    amPredicciones = d.predicciones || {};
+  }catch(e){ amJugadores=[]; amPredicciones={}; }
+}
+function amGuardar(){
+  try{ localStorage.setItem(AM_KEY, JSON.stringify({jugadores:amJugadores, predicciones:amPredicciones})); }catch(e){}
+}
+amCargar();
+
+function abrirAmigos(){
+  document.getElementById('amigosApp').classList.add('activo');
+  amRenderJugadores();
+  amRenderPartidos();
+  amRenderRanking();
+  window.scrollTo(0,0);
+}
+function cerrarAmigos(){
+  document.getElementById('amigosApp').classList.remove('activo');
+}
+function amTab(tab,btn){
+  document.querySelectorAll('#amigosApp .am-tab').forEach(t=>t.classList.remove('activo'));
+  btn.classList.add('activo');
+  document.querySelectorAll('#amigosApp .am-sec').forEach(s=>s.classList.remove('activa'));
+  document.getElementById('amSec-'+tab).classList.add('activa');
+  if(tab==='jugar') amRenderPartidos();
+  if(tab==='ranking') amRenderRanking();
+  if(tab==='jugadores') amRenderJugadores();
+}
+
+// ── JUGADORES ──
+function amAgregarJugador(){
+  const inp = document.getElementById('amNuevoJugador');
+  const nombre = inp.value.trim();
+  if(!nombre) return;
+  if(amJugadores.length>=12){ alert('Máximo 12 jugadores'); return; }
+  amJugadores.push({id:'j'+Date.now(), nombre});
+  inp.value='';
+  amGuardar();
+  amRenderJugadores();
+  amRenderPartidos();
+}
+function amEliminarJugador(id){
+  const j = amJugadores.find(x=>x.id===id);
+  if(!j) return;
+  if(!confirm(`¿Quitar a ${j.nombre}? Se borran sus predicciones.`)) return;
+  amJugadores = amJugadores.filter(x=>x.id!==id);
+  // borrar sus predicciones
+  Object.keys(amPredicciones).forEach(k=>{ if(k.startsWith(id+'_')) delete amPredicciones[k]; });
+  amGuardar();
+  amRenderJugadores();
+  amRenderPartidos();
+  amRenderRanking();
+}
+function amRenderJugadores(){
+  const grid = document.getElementById('amJugadoresGrid');
+  if(!amJugadores.length){
+    grid.innerHTML='<div style="color:var(--gris);font-size:13px">Aún no hay jugadores</div>';
+    return;
+  }
+  grid.innerHTML = amJugadores.map(j=>{
+    const pts = amCalcularPuntos(j.id);
+    return `<div class="am-jug-chip">${j.nombre} <span class="am-jug-pts">${pts}</span> <span class="am-jug-del" onclick="amEliminarJugador('${j.id}')">×</span></div>`;
+  }).join('');
+}
+
+// ── PARTIDOS Y PREDICCIONES ──
+function amRenderPartidos(){
+  const cont = document.getElementById('amListaPartidos');
+  if(!amJugadores.length){
+    cont.innerHTML='<div class="am-vacio">👥 Primero agrega jugadores en la pestaña "Jugadores" para empezar a predecir.</div>';
+    return;
+  }
+  // Mostrar partidos de fase de grupos (no finalizados primero, luego finalizados)
+  const lista = (partidos||[]).slice().sort((a,b)=>{
+    const orden={live:0,upcoming:1,finished:2};
+    return (orden[a.estado]||1)-(orden[b.estado]||1);
+  });
+  if(!lista.length){ cont.innerHTML='<div class="am-vacio">No hay partidos disponibles.</div>'; return; }
+
+  cont.innerHTML = lista.map(p=>{
+    const eqL = (typeof EQUIPOS!=='undefined' && EQUIPOS[p.local])?EQUIPOS[p.local].n:p.local;
+    const eqV = (typeof EQUIPOS!=='undefined' && EQUIPOS[p.visita])?EQUIPOS[p.visita].n:p.visita;
+    const banderaL = (typeof fUrl==='function')?fUrl(p.local):'';
+    const banderaV = (typeof fUrl==='function')?fUrl(p.visita):'';
+    const finalizado = p.estado==='finished';
+    let estadoHtml = p.estado==='live'?'<span class="am-part-estado live">🔴 EN VIVO</span>'
+                   : finalizado?'<span class="am-part-estado fin">✅ FINAL</span>'
+                   : `<span class="am-part-estado prox">${p.fecha}</span>`;
+    // Resultado real del partido
+    let resultadoReal = null;
+    if(p.gL>p.gV) resultadoReal='local'; else if(p.gV>p.gL) resultadoReal='visita'; else if(finalizado||p.estado==='live') resultadoReal='empate';
+
+    const predJug = amJugadores.map(j=>{
+      const key = j.id+'_'+p.id;
+      const pred = amPredicciones[key];
+      const opciones = [['local','Gana '+eqL.split(' ')[0]],['empate','Empate'],['visita','Gana '+eqV.split(' ')[0]]];
+      const btns = opciones.map(([val,txt])=>{
+        let clase='am-opcion';
+        if(finalizado && pred){
+          // mostrar acierto/fallo
+          if(pred===val){ clase += (val===resultadoReal)?' acierto':' fallo'; }
+        } else if(pred===val){ clase+=' sel'; }
+        const onclick = finalizado?'':`onclick="amPredecir('${j.id}','${p.id}','${val}')"`;
+        return `<div class="${clase}" ${onclick}>${txt}</div>`;
+      }).join('');
+      let resTxt='';
+      if(finalizado && pred){
+        resTxt = pred===resultadoReal ? '<div class="am-pred-resultado" style="color:var(--verde)">✅ +1 punto</div>' : '<div class="am-pred-resultado" style="color:#FF6B6B">❌ Sin puntos</div>';
+      } else if(finalizado && !pred){
+        resTxt = '<div class="am-pred-resultado" style="color:var(--gris)">No predijo</div>';
+      }
+      return `<div class="am-pred-jug">
+        <div class="am-pred-jug-nombre">${j.nombre}</div>
+        <div class="am-opciones">${btns}</div>
+        ${resTxt}
+      </div>`;
+    }).join('');
+
+    return `<div class="am-partido">
+      <div class="am-part-top">
+        <div class="am-part-equipos">
+          ${banderaL?`<img src="${banderaL}" onerror="this.style.display='none'">`:''}${eqL.split(' ')[0]}
+          <span style="color:var(--gris);margin:0 4px">vs</span>
+          ${banderaV?`<img src="${banderaV}" onerror="this.style.display='none'">`:''}${eqV.split(' ')[0]}
+        </div>
+        ${estadoHtml}
+      </div>
+      ${(p.estado==='live'||finalizado)?`<div style="text-align:center;margin-bottom:8px"><span class="am-part-marcador">${p.gL} - ${p.gV}</span></div>`:''}
+      ${predJug}
+    </div>`;
+  }).join('');
+}
+
+function amPredecir(jugadorId, partidoId, valor){
+  const key = jugadorId+'_'+partidoId;
+  // Si ya tenía esa opción, la quita (toggle); si no, la pone
+  if(amPredicciones[key]===valor) delete amPredicciones[key];
+  else amPredicciones[key]=valor;
+  amGuardar();
+  amRenderPartidos();
+  amRenderRanking();
+}
+
+// ── PUNTOS Y RANKING ──
+function amCalcularPuntos(jugadorId){
+  let pts=0;
+  (partidos||[]).forEach(p=>{
+    if(p.estado!=='finished') return;
+    const key = jugadorId+'_'+p.id;
+    const pred = amPredicciones[key];
+    if(!pred) return;
+    let real = null;
+    if(p.gL>p.gV) real='local'; else if(p.gV>p.gL) real='visita'; else real='empate';
+    if(pred===real) pts++;
+  });
+  return pts;
+}
+function amRenderRanking(){
+  const cont = document.getElementById('amRankingLista');
+  if(!amJugadores.length){
+    cont.innerHTML='<div class="am-vacio">👥 Agrega jugadores para ver la tabla de posiciones.</div>';
+    return;
+  }
+  const tabla = amJugadores.map(j=>({nombre:j.nombre, pts:amCalcularPuntos(j.id)}))
+    .sort((a,b)=>b.pts-a.pts);
+  const medallas=['🥇','🥈','🥉'];
+  cont.innerHTML = tabla.map((j,i)=>`
+    <div class="am-rank-fila">
+      <div class="am-rank-pos">${medallas[i]||(i+1)}</div>
+      <div class="am-rank-nombre">${j.nombre}</div>
+      <div class="am-rank-pts">${j.pts}<span style="font-size:12px;color:var(--gris)"> pts</span></div>
+    </div>
+  `).join('') + '<div style="text-align:center;color:var(--gris);font-size:12px;margin-top:10px">1 punto por cada resultado acertado (gana/empata/pierde)</div>';
+}
+
+function amReiniciar(){
+  if(!confirm('¿Borrar TODOS los jugadores y predicciones de este dispositivo?')) return;
+  amJugadores=[]; amPredicciones={};
+  amGuardar();
+  amRenderJugadores(); amRenderPartidos(); amRenderRanking();
+}
+
 </script>
+
+
+<!-- ════ OVERLAY POLLA ENTRE AMIGOS (local) ════ -->
+<div id="amigosApp">
+  <div class="am-cab">
+    <span style="font-size:24px">👨‍👩‍👧‍👦</span>
+    <div>
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:19px;color:var(--verde);line-height:1">POLLA ENTRE AMIGOS</div>
+      <div style="font-size:10px;color:var(--gris);letter-spacing:1px;font-weight:700">SOLO EN ESTE DISPOSITIVO</div>
+    </div>
+    <button class="am-cab-cerrar" onclick="cerrarAmigos()">✕</button>
+  </div>
+  <div class="am-main">
+    <div class="am-tabs">
+      <button class="am-tab activo" onclick="amTab('jugar',this)">⚽ Predecir</button>
+      <button class="am-tab" onclick="amTab('ranking',this)">🏆 Tabla</button>
+      <button class="am-tab" onclick="amTab('jugadores',this)">👥 Jugadores</button>
+    </div>
+
+    <!-- JUGAR -->
+    <div class="am-sec activa" id="amSec-jugar">
+      <div id="amListaPartidos"></div>
+    </div>
+
+    <!-- RANKING -->
+    <div class="am-sec" id="amSec-ranking">
+      <div id="amRankingLista"></div>
+    </div>
+
+    <!-- JUGADORES -->
+    <div class="am-sec" id="amSec-jugadores">
+      <div class="am-card">
+        <h3>👥 Jugadores</h3>
+        <p style="font-size:13px;color:var(--gris);margin-bottom:10px">Agrega a tus amigos o familiares. Cada uno predice en este mismo celular. (Se guardan solo aquí, no en internet.)</p>
+        <div class="am-jug-grid" id="amJugadoresGrid"></div>
+        <input class="am-input" id="amNuevoJugador" placeholder="Nombre del jugador" maxlength="20" onkeypress="if(event.key==='Enter')amAgregarJugador()">
+        <button class="am-btn" onclick="amAgregarJugador()">+ Agregar jugador</button>
+      </div>
+      <div class="am-card">
+        <h3>🔄 Reiniciar</h3>
+        <p style="font-size:13px;color:var(--gris);margin-bottom:10px">Borra todos los jugadores y predicciones de este dispositivo para empezar de cero.</p>
+        <button class="am-btn" style="background:rgba(232,0,29,.15);border:2px solid rgba(232,0,29,.3);color:#FF6B6B" onclick="amReiniciar()">🗑️ Borrar todo y empezar de nuevo</button>
+      </div>
+    </div>
+  </div>
+</div>
 
 <!-- ════ OVERLAY POLLA DE CLASIFICADOS ════ -->
 <div id="pollaApp">
