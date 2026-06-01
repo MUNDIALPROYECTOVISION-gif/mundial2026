@@ -800,10 +800,10 @@ body.es-admin .admin-only{display:block;}
 <body>
 <!-- ════ PANTALLA DE ACTUALIZACIÓN REQUERIDA ════ -->
 <div id="updateOverlay" style="display:none;position:fixed;inset:0;z-index:99999;background:linear-gradient(160deg,#03091A,#001F5B,#03091A);flex-direction:column;align-items:center;justify-content:center;padding:30px;text-align:center;">
-  <div style="font-size:64px;margin-bottom:16px">🔄</div>
-  <div style="font-family:'Bebas Neue',sans-serif;font-size:32px;color:#FFD700;line-height:1.1;margin-bottom:10px">NUEVA VERSIÓN<br>DISPONIBLE</div>
-  <div style="font-size:16px;color:#fff;max-width:340px;line-height:1.6;margin-bottom:24px">Hay una versión más reciente de la app. Por favor recarga la página para continuar con las últimas mejoras.</div>
-  <button onclick="location.reload(true)" style="padding:18px 44px;background:linear-gradient(135deg,#E8001D,#8B0000);color:#fff;border:none;border-radius:50px;font-family:'Nunito',sans-serif;font-size:20px;font-weight:900;cursor:pointer;box-shadow:0 0 30px rgba(232,0,29,.5)">🔄 RECARGAR AHORA</button>
+  <div style="font-size:64px;margin-bottom:16px">⚠️</div>
+  <div style="font-family:'Bebas Neue',sans-serif;font-size:30px;color:#FFD700;line-height:1.1;margin-bottom:10px">TIENES UNA<br>VERSIÓN ANTIGUA</div>
+  <div style="font-size:17px;color:#fff;max-width:340px;line-height:1.6;margin-bottom:24px">Recarga la página para actualizar a la última versión. No podrás usar la app hasta que recargues.</div>
+  <button onclick="forzarActualizacion()" style="padding:18px 44px;background:linear-gradient(135deg,#E8001D,#8B0000);color:#fff;border:none;border-radius:50px;font-family:'Nunito',sans-serif;font-size:20px;font-weight:900;cursor:pointer;box-shadow:0 0 30px rgba(232,0,29,.5)">🔄 RECARGAR PARA ACTUALIZAR</button>
   <div style="font-size:13px;color:#607D9F;margin-top:18px">Si el botón no funciona, cierra y vuelve a abrir la app.</div>
 </div>
 
@@ -1176,6 +1176,24 @@ function verificarVersion(){
   }catch(e){ console.error('Error verificando versión:',e); }
 }
 verificarVersion();
+
+// Recargar limpiando el caché y el service worker (para garantizar la versión nueva)
+async function forzarActualizacion(){
+  try{
+    // Borrar todas las cachés
+    if('caches' in window){
+      const keys = await caches.keys();
+      await Promise.all(keys.map(k=>caches.delete(k)));
+    }
+    // Actualizar el service worker
+    if('serviceWorker' in navigator){
+      const regs = await navigator.serviceWorker.getRegistrations();
+      await Promise.all(regs.map(r=>r.update()));
+    }
+  }catch(e){ console.error('Error limpiando caché:',e); }
+  // Recargar desde el servidor
+  location.reload(true);
+}
 
 // ════ Registrar Service Worker (PWA) ════
 if('serviceWorker' in navigator){
