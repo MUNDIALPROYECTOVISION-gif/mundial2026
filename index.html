@@ -19,7 +19,8 @@
 html,body{font-family:'Nunito',sans-serif;background:var(--fondo);color:var(--blanco);min-height:100vh;min-height:100dvh;overflow-x:hidden;font-size:18px;-webkit-text-size-adjust:100%;}
 
 /* ══ INTRO ══ */
-#intro{position:fixed;inset:0;background:linear-gradient(160deg,#03091A,#001F5B,#03091A);z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;padding-top:max(20px,env(safe-area-inset-top));padding-bottom:max(20px,env(safe-area-inset-bottom));text-align:center;overflow-y:auto;-webkit-overflow-scrolling:touch;}
+#intro{position:fixed;inset:0;background:linear-gradient(160deg,#03091A,#001F5B,#03091A);z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding:30px 20px;padding-top:max(30px,env(safe-area-inset-top));padding-bottom:max(40px,env(safe-area-inset-bottom));text-align:center;overflow-y:auto;-webkit-overflow-scrolling:touch;}
+#intro::before,#intro::after{content:'';flex:1 0 auto;min-height:0;}
 .intro-glow{position:absolute;width:600px;height:600px;background:radial-gradient(ellipse,rgba(0,194,255,.1),transparent 70%);animation:glow 3s ease-in-out infinite;}
 @keyframes glow{0%,100%{transform:scale(1);}50%{transform:scale(1.3);}}
 /* Reflectores de estadio que barren el fondo */
@@ -62,7 +63,7 @@ html,body{font-family:'Nunito',sans-serif;background:var(--fondo);color:var(--bl
 .pv-wa:active{background:rgba(37,211,102,.3);transform:scale(.96);}
 .pv-email{font-size:11px;color:#00C2FF;margin-top:4px;}
 .intro-linea2{height:2px;width:0;background:linear-gradient(90deg,var(--rojo),var(--oro),#00C2FF);margin:10px auto;border-radius:2px;animation:linea 1s ease forwards 3s;}
-.btn-entrar{display:block;margin:14px auto 0;padding:17px 52px;background:linear-gradient(135deg,var(--rojo),#8B0000);color:#fff;border:none;border-radius:50px;font-family:'Nunito',sans-serif;font-size:21px;font-weight:900;cursor:pointer;box-shadow:0 0 30px rgba(232,0,29,.5);transition:transform .2s;opacity:0;animation:subir .8s ease forwards 3.2s, latido 1.8s ease-in-out infinite 4s;position:relative;overflow:hidden;}
+.btn-entrar{display:block;margin:18px auto 10px;padding:17px 52px;background:linear-gradient(135deg,var(--rojo),#8B0000);color:#fff;border:none;border-radius:50px;font-family:'Nunito',sans-serif;font-size:21px;font-weight:900;cursor:pointer;box-shadow:0 0 30px rgba(232,0,29,.5);transition:transform .2s;opacity:0;animation:subir .8s ease forwards 3.2s, latido 1.8s ease-in-out infinite 4s;position:relative;overflow:hidden;flex-shrink:0;}
 .btn-entrar:active{transform:scale(.97);}
 .btn-entrar::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.2),transparent);transform:translateX(-100%);animation:shimmer 2.5s ease infinite 3.5s;}
 @keyframes shimmer{to{transform:translateX(200%);}}
@@ -1279,6 +1280,8 @@ function escucharPartidosFB(){
     if(Array.isArray(d.partidos)) partidos = d.partidos;
     if(d.koPartidos) koPartidos = d.koPartidos;
     if(typeof d.totalGoles==='number') totalGoles = d.totalGoles;
+    // Limpiar estados falsos (ej: partidos "en vivo" antes de que arranque el Mundial)
+    if(typeof limpiarEstadosFalsos==='function') limpiarEstadosFalsos();
     // Guardar copia local para que persista al cerrar
     try{ localStorage.setItem(LS_KEY, JSON.stringify({partidos,koPartidos,jugadores,apuestas,cfg,totalGoles,campeonMostrado})); }catch(e){}
     // Re-renderizar lo que el cliente esté viendo (solo si la app ya está lista)
@@ -1317,19 +1320,19 @@ function limpiarEstadosFalsos(){
   const antesDelMundial = ahora < inicioMundial;
 
   partidos.forEach(p=>{
-    if(p.actualizadoPorAPI) return; // datos reales de la API, no tocar
-
     if(antesDelMundial){
-      // Antes del Mundial: TODO partido vuelve a "por jugar" y marcador en 0
+      // Antes del Mundial NADIE está jugando: TODO vuelve a "por jugar" y 0-0
+      // (incluso si la API lo marcó, porque antes del 11 de junio solo hay calendario)
       if(p.estado!=='upcoming' || p.gL!==0 || p.gV!==0 || (p.goles&&p.goles.length)){
         p.estado='upcoming';
         p.gL=0; p.gV=0; p.goles=[];
       }
-    } else {
-      // Durante el Mundial: solo limpiamos los "en vivo/terminado" sin goles
-      if((p.estado==='live'||p.estado==='finished') && p.gL===0 && p.gV===0 && (!p.goles||p.goles.length===0)){
-        p.estado='upcoming';
-      }
+      return;
+    }
+    if(p.actualizadoPorAPI) return; // ya en el Mundial: datos reales de la API, no tocar
+    // Durante el Mundial: limpiar los "en vivo/terminado" sin goles
+    if((p.estado==='live'||p.estado==='finished') && p.gL===0 && p.gV===0 && (!p.goles||p.goles.length===0)){
+      p.estado='upcoming';
     }
   });
 
@@ -2775,6 +2778,13 @@ function pllSeleccionarOficina(oficina,btn){
 // ════════════════ INGRESO ════════════════
 async function pllIngresar(){
   const msg=document.getElementById('pll_ingresoMsg');
+  // Fecha límite: las predicciones cierran después del 10 de junio de 2026 (23:59)
+  const cierrePolla = new Date('2026-06-10T23:59:59');
+  if(new Date() > cierrePolla){
+    msg.className='ingreso-msg error';
+    msg.innerHTML='⏰ <strong>Las predicciones ya cerraron.</strong><br>El plazo para participar terminó el 10 de junio. ¡Mucha suerte a los que alcanzaron a jugar!';
+    return;
+  }
   if(!pllOficinaSeleccionada){
     msg.className='ingreso-msg error';msg.textContent='⚠️ Primero selecciona tu oficina';return;
   }
@@ -2976,6 +2986,12 @@ function pllAbrirResumen(){
 function pllCerrarModal(){document.getElementById('pll_modalResumen').classList.remove('activo');}
 
 function pllConfirmarApuesta(){
+  // Verificar que no haya pasado la fecha límite
+  if(new Date() > new Date('2026-06-10T23:59:59')){
+    pllCerrarModal();
+    alert('⏰ Las predicciones cerraron el 10 de junio. Ya no es posible confirmar.');
+    return;
+  }
   // Guardar en "base de datos" demo
   pllClienteActual.yaAposto=true;
   pllClienteActual.prediccion=JSON.parse(JSON.stringify(pllSeleccion));
@@ -4025,6 +4041,7 @@ function amReiniciar(){
       <div class="ingreso-icono">🎫</div>
       <div class="ingreso-titulo">¡Participa y gana!</div>
       <div class="ingreso-sub">Si ya pagaste tu factura, participa en la polla del Mundial.</div>
+      <div style="background:rgba(255,165,0,.1);border:1.5px solid rgba(255,165,0,.35);border-radius:12px;padding:10px 12px;margin:12px 0;font-size:13px;color:#FFB84D;font-weight:700;text-align:center">⏰ Tienes plazo para participar hasta el <strong>10 de junio</strong></div>
 
       <label class="ingreso-label">1️⃣ SELECCIONA TU OFICINA</label>
       <div class="oficinas-grid" id="pll_oficinasGrid">
