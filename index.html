@@ -635,6 +635,9 @@ body.es-admin .admin-only{display:block;}
 @keyframes rebote{0%{transform:scale(0);}60%{transform:scale(1.2);}100%{transform:scale(1);}}
 #pollaApp .final-titulo{font-size:28px;font-weight:900;color:var(--verde);margin-bottom:10px;}
 #pollaApp .final-sub{font-size:16px;color:var(--texto2);line-height:1.7;margin-bottom:24px;}
+#pollaApp .btn-entrar-app-grande{width:100%;padding:20px;background:linear-gradient(135deg,var(--verde),#00A847);border:none;border-radius:18px;color:#fff;font-family:'Nunito',sans-serif;font-size:21px;font-weight:900;cursor:pointer;margin-top:8px;box-shadow:0 6px 24px rgba(0,200,83,.4);animation:latidoVerde 1.8s ease-in-out infinite;}
+#pollaApp .btn-entrar-app-grande:active{transform:scale(.97);}
+@keyframes latidoVerde{0%,100%{box-shadow:0 6px 24px rgba(0,200,83,.4);}50%{box-shadow:0 8px 34px rgba(0,200,83,.7);transform:scale(1.02);}}
 #pollaApp .btn-ver-ranking{width:100%;padding:16px;background:linear-gradient(135deg,var(--oro),#FFA500);border:none;border-radius:16px;color:var(--azul);font-family:'Nunito',sans-serif;font-size:18px;font-weight:900;cursor:pointer;margin-bottom:10px;}
 #pollaApp .btn-ver-prediccion{width:100%;padding:14px;background:transparent;border:2px solid rgba(0,194,255,.3);border-radius:16px;color:#00C2FF;font-family:'Nunito',sans-serif;font-size:16px;font-weight:800;cursor:pointer;}
 /* RANKING */
@@ -3720,7 +3723,29 @@ escucharPartidosFB();
 // ════════════════════════════════════════════════════════════════
 // POLLA ENTRE AMIGOS (local, guardada solo en este dispositivo)
 // ════════════════════════════════════════════════════════════════
-const AM_KEY = 'mundial2026_amigos';
+// La polla entre amigos debe ser INDEPENDIENTE por dispositivo.
+// Chrome sincroniza el localStorage entre equipos con la misma cuenta, así que
+// creamos una "huella" del dispositivo (que Chrome NO sincroniza) para que cada
+// aparato tenga su propia clave de almacenamiento.
+function amHuellaDispositivo(){
+  // Combinar características propias de cada dispositivo/navegador
+  const n = navigator;
+  const partes = [
+    screen.width + 'x' + screen.height,           // resolución de pantalla
+    screen.colorDepth,                             // profundidad de color
+    new Date().getTimezoneOffset(),                // zona horaria
+    n.hardwareConcurrency || 0,                    // núcleos del procesador
+    n.maxTouchPoints || 0,                         // si es táctil (celular) o no (PC)
+    n.platform || '',                              // plataforma (Win, Android, iPhone)
+    (n.userAgent.match(/(Android|iPhone|iPad|Windows|Mac|Linux)/)||['x'])[0]
+  ];
+  // Convertir a un número corto (hash simple)
+  let h = 0;
+  const s = partes.join('|');
+  for(let i=0;i<s.length;i++){ h = ((h<<5)-h + s.charCodeAt(i))|0; }
+  return 'd' + Math.abs(h).toString(36);
+}
+const AM_KEY = 'mundial2026_amigos_' + amHuellaDispositivo();
 let amJugadores = [];   // [{id, nombre}]
 let amPredicciones = {}; // { 'jugadorId_partidoId': 'local'|'empate'|'visita' }
 let amBloqueos = {};     // { 'jugadorId_partidoId': true }  (predicción guardada/bloqueada)
@@ -4069,6 +4094,8 @@ function amReiniciar(){
       <div class="final-icono">🎉</div>
       <div class="final-titulo">¡Apuesta registrada!</div>
       <div class="final-sub">Tu predicción quedó guardada y bloqueada.<br>¡Mucha suerte en la polla!</div>
+      <button class="btn-entrar-app-grande" onclick="cerrarPolla()">⚽ ENTRAR A LA APP DEL MUNDIAL</button>
+      <div style="font-size:13px;color:var(--gris);margin:14px 0 4px">También puedes:</div>
       <button class="btn-ver-ranking" onclick="pllVerRanking()">📊 Ver ranking de mi oficina</button>
       <button class="btn-ver-prediccion" onclick="pllVerMiPrediccion()">👁️ Ver mi predicción</button>
     </div>
