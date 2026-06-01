@@ -1154,7 +1154,7 @@ const FB_OK = true;
 // ════ VERSIÓN DE LA APP ════
 // Sube este número cada vez que publiques una nueva versión en GitHub.
 // La app compara con la versión guardada en Firebase; si está vieja, obliga a recargar.
-const APP_VERSION = 8;
+const APP_VERSION = 9;
 console.log('🔥 Firebase conectado:', firebaseConfig.projectId);
 
 // ════ CONTROL DE VERSIÓN ════
@@ -3257,9 +3257,21 @@ function admInitFiltros(){
 }
 // Helpers de columnas flexibles
 function colVal(fila, nombres){
+  // Normaliza: quita acentos, espacios extra, pasa a minúscula
+  const norm = s => String(s).normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim().toLowerCase().replace(/\s+/g,' ');
+  const claves = Object.keys(fila);
+  // 1) Coincidencia exacta (normalizada)
   for(const n of nombres){
-    for(const k of Object.keys(fila)){
-      if(k.trim().toLowerCase()===n.toLowerCase()) return String(fila[k]).trim();
+    const nn = norm(n);
+    for(const k of claves){
+      if(norm(k)===nn) return String(fila[k]).trim();
+    }
+  }
+  // 2) Coincidencia por "contiene" (por si el encabezado trae texto extra)
+  for(const n of nombres){
+    const nn = norm(n);
+    for(const k of claves){
+      if(norm(k).includes(nn)) return String(fila[k]).trim();
     }
   }
   return '';
@@ -4282,20 +4294,40 @@ function ofCargarExcel(event){
       const sheet = wb.Sheets[wb.SheetNames[0]];
       const filas = XLSX.utils.sheet_to_json(sheet,{defval:''});
 
+      // Diagnóstico: ver qué columnas tiene el Excel
+      const columnas = filas.length ? Object.keys(filas[0]) : [];
+      console.log('📋 Columnas detectadas en el Excel:', columnas);
+      console.log('📊 Total de filas:', filas.length);
+
+      if(!filas.length){
+        msg.className='of-msg error';
+        msg.innerHTML='❌ El Excel está vacío o no se pudo leer la primera hoja.';
+        return;
+      }
+
       // 3) Agrupar por servicio (reusa las mismas funciones del admin)
       const servicios = {};
+      let sinUsuario = 0;
       for(const fila of filas){
-        const usuario = colVal(fila, ['Usuario','usuario']);
+        const usuario = colVal(fila, ['Usuario','usuario','USUARIO','Usuario ','Login','login','user']);
         const codigo = codigoServicio(usuario);
-        if(!codigo) continue;
-        const nombre = colVal(fila, ['Cliente','cliente','Nombre']);
-        const tel = colVal(fila, ['Telefono','Teléfono','telefono','Celular']);
-        const cedula = colVal(fila, ['DNI/C.I./C.C./IFE','Cédula','Cedula','cedula','Documento','DNI']);
-        const estado = colVal(fila, ['Estado','estado']);
-        const fechaPago = colVal(fila, ['Fecha Pago','fecha pago','FechaPago']);
-        const valor = colVal(fila, ['Total Cobrado','total cobrado','Valor Pagado','Valor','valor']);
+        if(!codigo){ sinUsuario++; continue; }
+        const nombre = colVal(fila, ['Cliente','cliente','Nombre','nombre','CLIENTE']);
+        const tel = colVal(fila, ['Telefono','Teléfono','telefono','Celular','celular','TELEFONO']);
+        const cedula = colVal(fila, ['DNI/C.I./C.C./IFE','Cédula','Cedula','cedula','Documento','DNI','documento']);
+        const estado = colVal(fila, ['Estado','estado','ESTADO','Status','status']);
+        const fechaPago = colVal(fila, ['Fecha Pago','fecha pago','FechaPago','Fecha de pago','fecha_pago']);
+        const valor = colVal(fila, ['Total Cobrado','total cobrado','Valor Pagado','Valor','valor','Monto','monto']);
         if(!servicios[codigo]) servicios[codigo]={codigo, nombre:limpiarNombre(nombre), tel, cedula, facturas:[]};
         servicios[codigo].facturas.push({estado, fechaPago, valor});
+      }
+      console.log('👥 Servicios agrupados:', Object.keys(servicios).length, '| Filas sin usuario válido:', sinUsuario);
+
+      // Si no encontró NINGÚN servicio, avisar con las columnas que sí encontró
+      if(Object.keys(servicios).length===0){
+        msg.className='of-msg error';
+        msg.innerHTML='❌ No se encontró la columna <strong>"Usuario"</strong> en el Excel, o está vacía.<br><br>Columnas detectadas: <strong>'+columnas.join(', ')+'</strong><br><br>Verifica que el archivo sea el reporte de facturas correcto.';
+        return;
       }
 
       // 4) Filtrar y guardar en lote
