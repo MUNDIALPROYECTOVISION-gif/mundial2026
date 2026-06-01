@@ -745,6 +745,10 @@ body.es-admin .admin-only{display:block;}
 #amigosApp .am-sec{display:none;}
 #amigosApp .am-sec.activa{display:block;}
 #amigosApp .am-vacio{text-align:center;padding:30px;color:var(--gris);font-size:14px;line-height:1.6;}
+#amigosApp .am-btn-guardar{width:100%;margin-top:8px;padding:9px;background:rgba(0,200,83,.15);border:2px solid var(--verde);border-radius:10px;color:var(--verde);font-family:'Nunito',sans-serif;font-size:13px;font-weight:800;cursor:pointer;}
+#amigosApp .am-btn-guardar:active{transform:scale(.98);}
+#amigosApp .am-pred-bloqueada{margin-top:8px;font-size:12px;font-weight:800;color:var(--oro);}
+#amigosApp .am-opcion-bloq{opacity:.35;}
 
 </style>
 </head>
@@ -990,7 +994,7 @@ body.es-admin .admin-only{display:block;}
     </div>
 
     <div class="pagina" id="pag-apuestas">
-      <div class="sec-titulo">💰 Pollas &amp; Apuestas</div>
+      <div class="sec-titulo">🎮 Pollas del Mundial</div>
 
       <!-- ENTRADA POLLA DE CLASIFICADOS -->
       <div style="background:linear-gradient(135deg,rgba(0,31,91,.8),rgba(232,0,29,.15));border:2px solid var(--oro);border-radius:18px;padding:20px;margin-bottom:16px;text-align:center;">
@@ -1009,38 +1013,49 @@ body.es-admin .admin-only{display:block;}
       </div>
 
       <!-- RANKING GENERAL -->
-      <div class="ranking-card" id="rankingCard">
-        <div class="ranking-cab"><h3>🏆 Ranking General</h3></div>
-        <div id="rankingLista"><div style="padding:20px;text-align:center;color:var(--gris);font-size:15px">Aún no hay jugadores registrados</div></div>
+      <!-- BANNER MUNDIAL PROYECTOVISION -->
+      <div style="background:linear-gradient(135deg,#001F5B,#03091A);border:2px solid var(--oro);border-radius:18px;padding:24px 18px;margin-bottom:16px;text-align:center;position:relative;overflow:hidden;">
+        <div style="position:absolute;inset:0;background:radial-gradient(circle at 50% 0%,rgba(255,215,0,.12),transparent 60%);"></div>
+        <div style="position:relative;z-index:1">
+          <div style="font-size:50px;margin-bottom:6px">🏆</div>
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:34px;line-height:1;background:linear-gradient(135deg,#FFD700,#FFF3A0,#FFA500);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">MUNDIAL 2026</div>
+          <div style="font-size:16px;font-weight:900;color:var(--rojo);letter-spacing:3px;margin-top:2px">PROYECTOVISION</div>
+          <div style="font-size:11px;color:var(--gris);letter-spacing:2px;margin-top:6px">CLICK ZOMAC S.A.S · TU INTERNET</div>
+        </div>
       </div>
 
-      <div class="apuestas-config">
-        <h3>⚙️ Límites</h3>
-        <div class="config-fila">
-          <div class="config-item"><label>Máximo ($)</label><input type="number" class="config-input" id="cfgTope" value="50000" min="1000" step="1000" oninput="guardarConfig()"></div>
-          <div class="config-item"><label>Mínimo ($)</label><input type="number" class="config-input" id="cfgMin" value="5000" min="1000" step="1000" oninput="guardarConfig()"></div>
-        </div>
-        <div class="config-nota">
-          <strong>¿Cómo funciona la polla?</strong> Antes de cada partido, cada jugador paga y escoge su pronóstico. Al terminar el partido, el que más puntos sacó se lleva el pozo. Si nadie acierta, se devuelve la plata.
-          <div class="puntos-tabla">
-            <div class="puntos-fila"><span class="puntos-fase">Grupos</span><div class="puntos-vals"><span class="puntos-exacto">Exacto: 3pts</span><span class="puntos-simple">Resultado: 1pt</span></div></div>
-            <div class="puntos-fila"><span class="puntos-fase">Dieciseisavos</span><div class="puntos-vals"><span class="puntos-exacto">Exacto: 4pts</span><span class="puntos-simple">Resultado: 2pts</span></div></div>
-            <div class="puntos-fila"><span class="puntos-fase">Octavos</span><div class="puntos-vals"><span class="puntos-exacto">Exacto: 5pts</span><span class="puntos-simple">Resultado: 2pts</span></div></div>
-            <div class="puntos-fila"><span class="puntos-fase">Cuartos</span><div class="puntos-vals"><span class="puntos-exacto">Exacto: 6pts</span><span class="puntos-simple">Resultado: 3pts</span></div></div>
-            <div class="puntos-fila"><span class="puntos-fase">Semis / 3er puesto</span><div class="puntos-vals"><span class="puntos-exacto">Exacto: 8pts</span><span class="puntos-simple">Resultado: 4pts</span></div></div>
-            <div class="puntos-fila"><span class="puntos-fase">🏆 Gran Final</span><div class="puntos-vals"><span class="puntos-exacto">Exacto: 10pts</span><span class="puntos-simple">Resultado: 5pts</span></div></div>
+      <!-- INFORMACIÓN DE OFICINAS -->
+      <div style="background:var(--tarjeta);border:2px solid var(--borde);border-radius:18px;padding:18px;margin-bottom:16px">
+        <div style="font-size:18px;font-weight:900;color:var(--oro);margin-bottom:14px;text-align:center">📍 Nuestras Oficinas</div>
+
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <div style="background:rgba(0,194,255,.05);border:1px solid rgba(0,194,255,.18);border-radius:12px;padding:12px">
+            <div style="font-size:15px;font-weight:900;color:#fff">🏙️ Florencia</div>
+            <div style="font-size:13px;color:var(--gris);margin:3px 0 6px">Cra. 6 # 12-24, B/ El Raicero</div>
+            <a href="https://wa.me/573228476612" target="_blank" style="display:inline-flex;align-items:center;gap:5px;background:rgba(37,211,102,.15);border:1px solid rgba(37,211,102,.4);color:#25D366;font-size:13px;font-weight:800;padding:5px 12px;border-radius:20px;text-decoration:none">💬 322 847 6612</a>
+          </div>
+
+          <div style="background:rgba(0,194,255,.05);border:1px solid rgba(0,194,255,.18);border-radius:12px;padding:12px">
+            <div style="font-size:15px;font-weight:900;color:#fff">🌿 El Paujil</div>
+            <div style="font-size:13px;color:var(--gris);margin:3px 0 6px">Cr 5 cl 5 esquina, B/ Centro</div>
+            <a href="https://wa.me/573186219451" target="_blank" style="display:inline-flex;align-items:center;gap:5px;background:rgba(37,211,102,.15);border:1px solid rgba(37,211,102,.4);color:#25D366;font-size:13px;font-weight:800;padding:5px 12px;border-radius:20px;text-decoration:none">💬 318 621 9451</a>
+          </div>
+
+          <div style="background:rgba(0,194,255,.05);border:1px solid rgba(0,194,255,.18);border-radius:12px;padding:12px">
+            <div style="font-size:15px;font-weight:900;color:#fff">🌄 El Doncello</div>
+            <div style="font-size:13px;color:var(--gris);margin:3px 0 6px">Cr 5 # 5-56, B/ Recreo</div>
+            <a href="https://wa.me/573157033416" target="_blank" style="display:inline-flex;align-items:center;gap:5px;background:rgba(37,211,102,.15);border:1px solid rgba(37,211,102,.4);color:#25D366;font-size:13px;font-weight:800;padding:5px 12px;border-radius:20px;text-decoration:none">💬 315 703 3416</a>
+          </div>
+
+          <div style="background:rgba(0,194,255,.05);border:1px solid rgba(0,194,255,.18);border-radius:12px;padding:12px">
+            <div style="font-size:15px;font-weight:900;color:#fff">⛵ Cartagena del Chairá</div>
+            <div style="font-size:13px;color:var(--gris);margin:3px 0 6px">Cra 2 Cll 3 Casa 1, B/ Centro</div>
+            <a href="https://wa.me/573115457323" target="_blank" style="display:inline-flex;align-items:center;gap:5px;background:rgba(37,211,102,.15);border:1px solid rgba(37,211,102,.4);color:#25D366;font-size:13px;font-weight:800;padding:5px 12px;border-radius:20px;text-decoration:none">💬 311 545 7323</a>
           </div>
         </div>
-        <div class="config-aviso"><strong>⚠️ Importante:</strong> Agrega primero los jugadores aquí abajo antes de apostar en los partidos.</div>
+
+        <div style="text-align:center;font-size:12px;color:#00C2FF;margin-top:12px">✉️ proyectovisions.a.s@gmail.com</div>
       </div>
-      <div class="jugadores-bar">
-        <h3>👨‍👩‍👧‍👦 Jugadores</h3>
-        <div class="jugadores-grid" id="jugadoresGrid"></div>
-        <button class="btn-agregar-j" onclick="abrirModalJugador(null)">+ Agregar jugador</button>
-      </div>
-      <div class="sec-titulo" style="font-size:20px;margin-bottom:10px">📋 Historial de pozos</div>
-      <div class="apuestas-stats" id="apuestasStats"></div>
-      <div class="lista-apuestas" id="listaApuestas"></div>
     </div>
   </main>
   <nav class="nav-bottom">
@@ -1335,8 +1350,10 @@ function resetearDatos(){
 
 // ── GUARDAR CONFIG ────────────────────────────────────────────────────────
 function guardarConfig(){
-  cfg.tope=parseInt(document.getElementById('cfgTope').value)||50000;
-  cfg.min=parseInt(document.getElementById('cfgMin').value)||5000;
+  const t=document.getElementById('cfgTope'), m=document.getElementById('cfgMin');
+  if(!t||!m) return;
+  cfg.tope=parseInt(t.value)||50000;
+  cfg.min=parseInt(m.value)||5000;
   guardarDatos();
 }
 
@@ -1379,9 +1396,10 @@ function entrarApp(){
     intro.style.display='none';
     document.getElementById('app').style.display='block';
     renderizarTodo();
-    // Sync config inputs
-    document.getElementById('cfgTope').value=cfg.tope;
-    document.getElementById('cfgMin').value=cfg.min;
+    // Sync config inputs (si existen)
+    const _t=document.getElementById('cfgTope'), _m=document.getElementById('cfgMin');
+    if(_t) _t.value=cfg.tope;
+    if(_m) _m.value=cfg.min;
     cargarApiKey();
     // Abrir la Polla de Clasificados como primera pantalla
     abrirPolla();
@@ -2568,6 +2586,8 @@ async function verPlantilla(k){
 
 
 function renderizarApuestas(){
+  // La página de apuestas ahora muestra branding y oficinas (sistema viejo de pozos retirado)
+  if(!document.getElementById('rankingLista')) return;
   // ── RANKING ──────────────────────────────────────
   const ranking = calcularRanking();
   const posEmojis = ['🥇','🥈','🥉'];
@@ -3676,16 +3696,18 @@ escucharPartidosFB();
 const AM_KEY = 'mundial2026_amigos';
 let amJugadores = [];   // [{id, nombre}]
 let amPredicciones = {}; // { 'jugadorId_partidoId': 'local'|'empate'|'visita' }
+let amBloqueos = {};     // { 'jugadorId_partidoId': true }  (predicción guardada/bloqueada)
 
 function amCargar(){
   try{
     const d = JSON.parse(localStorage.getItem(AM_KEY)||'{}');
     amJugadores = d.jugadores || [];
     amPredicciones = d.predicciones || {};
-  }catch(e){ amJugadores=[]; amPredicciones={}; }
+    amBloqueos = d.bloqueos || {};
+  }catch(e){ amJugadores=[]; amPredicciones={}; amBloqueos={}; }
 }
 function amGuardar(){
-  try{ localStorage.setItem(AM_KEY, JSON.stringify({jugadores:amJugadores, predicciones:amPredicciones})); }catch(e){}
+  try{ localStorage.setItem(AM_KEY, JSON.stringify({jugadores:amJugadores, predicciones:amPredicciones, bloqueos:amBloqueos})); }catch(e){}
 }
 amCargar();
 
@@ -3775,14 +3797,17 @@ function amRenderPartidos(){
     const predJug = amJugadores.map(j=>{
       const key = j.id+'_'+p.id;
       const pred = amPredicciones[key];
+      const bloqueada = amBloqueos[key]===true;
       const opciones = [['local','Gana '+eqL.split(' ')[0]],['empate','Empate'],['visita','Gana '+eqV.split(' ')[0]]];
       const btns = opciones.map(([val,txt])=>{
         let clase='am-opcion';
         if(finalizado && pred){
-          // mostrar acierto/fallo
           if(pred===val){ clase += (val===resultadoReal)?' acierto':' fallo'; }
         } else if(pred===val){ clase+=' sel'; }
-        const onclick = finalizado?'':`onclick="amPredecir('${j.id}','${p.id}','${val}')"`;
+        // Si está bloqueada o el partido terminó, no se puede tocar
+        const puedeTocar = !finalizado && !bloqueada;
+        const onclick = puedeTocar?`onclick="amPredecir('${j.id}','${p.id}','${val}')"`:'';
+        if(bloqueada && pred!==val) clase+=' am-opcion-bloq';
         return `<div class="${clase}" ${onclick}>${txt}</div>`;
       }).join('');
       let resTxt='';
@@ -3790,6 +3815,11 @@ function amRenderPartidos(){
         resTxt = pred===resultadoReal ? '<div class="am-pred-resultado" style="color:var(--verde)">✅ +1 punto</div>' : '<div class="am-pred-resultado" style="color:#FF6B6B">❌ Sin puntos</div>';
       } else if(finalizado && !pred){
         resTxt = '<div class="am-pred-resultado" style="color:var(--gris)">No predijo</div>';
+      } else if(!finalizado && pred && !bloqueada){
+        // Tiene predicción pero no la ha guardado → botón guardar
+        resTxt = `<button class="am-btn-guardar" onclick="amBloquear('${j.id}','${p.id}')">🔒 Guardar predicción</button>`;
+      } else if(!finalizado && bloqueada){
+        resTxt = `<div class="am-pred-bloqueada">🔒 Predicción guardada <span onclick="amDesbloquear('${j.id}','${p.id}')" style="color:#00C2FF;cursor:pointer;text-decoration:underline;margin-left:6px">cambiar</span></div>`;
       }
       return `<div class="am-pred-jug">
         <div class="am-pred-jug-nombre">${j.nombre}</div>
@@ -3815,12 +3845,27 @@ function amRenderPartidos(){
 
 function amPredecir(jugadorId, partidoId, valor){
   const key = jugadorId+'_'+partidoId;
+  if(amBloqueos[key]===true) return; // bloqueada, no se cambia
   // Si ya tenía esa opción, la quita (toggle); si no, la pone
   if(amPredicciones[key]===valor) delete amPredicciones[key];
   else amPredicciones[key]=valor;
   amGuardar();
   amRenderPartidos();
   amRenderRanking();
+}
+function amBloquear(jugadorId, partidoId){
+  const key = jugadorId+'_'+partidoId;
+  if(!amPredicciones[key]){ alert('Primero elige una opción.'); return; }
+  amBloqueos[key]=true;
+  amGuardar();
+  amRenderPartidos();
+}
+function amDesbloquear(jugadorId, partidoId){
+  const key = jugadorId+'_'+partidoId;
+  if(!confirm('¿Cambiar esta predicción que ya guardaste?')) return;
+  delete amBloqueos[key];
+  amGuardar();
+  amRenderPartidos();
 }
 
 // ── PUNTOS Y RANKING ──
@@ -3857,7 +3902,7 @@ function amRenderRanking(){
 
 function amReiniciar(){
   if(!confirm('¿Borrar TODOS los jugadores y predicciones de este dispositivo?')) return;
-  amJugadores=[]; amPredicciones={};
+  amJugadores=[]; amPredicciones={}; amBloqueos={};
   amGuardar();
   amRenderJugadores(); amRenderPartidos(); amRenderRanking();
 }
