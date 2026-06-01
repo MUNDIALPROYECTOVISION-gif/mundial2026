@@ -2723,11 +2723,8 @@ let PLL_MAX_POR_GRUPO=3;  // máximo por grupo
 
 // ════════════════ BASE DE DATOS DE PRUEBA ════════════════
 // (En la versión real esto vendrá de Firebase)
-let pllClientesDemo={
-  '111':{cedula:'111',nombre:'Juan Pérez',oficina:'El Doncello',activa:true,yaAposto:false,prediccion:null},
-  '222':{cedula:'222',nombre:'Ana Gómez',oficina:'Florencia',activa:true,yaAposto:false,prediccion:null},
-  '333':{cedula:'333',nombre:'Pedro Ruiz',oficina:'El Doncello',activa:true,yaAposto:true,prediccion:{A:['mexico','sudafrica'],B:['canada','suiza'],C:['brasil','marruecos','escocia'],D:['eeuu','paraguay'],E:['alemania','noruega'],F:['paises_bajos','japon'],G:['belgica','egipto'],H:['espana','uruguay','arabia'],I:['francia','senegal'],J:['argentina','ecuador'],K:['portugal','colombia'],L:['inglaterra','croacia']}},
-};
+let pllClientesDemo={};
+// Los clientes reales se cargan de Firebase (Excel del admin)
 // Apuestas de otros para el ranking demo
 let pllRankingDemo=[
   {nombre:'Pedro Ruiz',oficina:'El Doncello',aciertos:18,esYo:false},
@@ -2805,19 +2802,13 @@ async function pllIngresar(){
   }
   pllClienteActual=cliente;
   if(cliente.yaAposto){
-    // Ya apostó → mostrar su predicción en solo lectura
-    msg.className='ingreso-msg ok';
-    msg.innerHTML='✅ Ya hiciste tu apuesta. Mostrando tu predicción...';
+    // Ya apostó → mostrar su predicción en solo lectura (directo)
     pllSeleccion=JSON.parse(JSON.stringify(cliente.prediccion));
-    setTimeout(()=>{pllMostrarPantalla('final');},1200);
+    pllMostrarPantalla('final');
     return;
   }
-  // Activa y sin apostar → a predecir
-  msg.className='ingreso-msg ok';
-  msg.textContent='✅ ¡Bienvenido! Cargando...';
-  setTimeout(()=>{
-    pllIniciarPrediccion();
-  },800);
+  // Activa y sin apostar → directo a predecir (sin espera)
+  pllIniciarPrediccion();
 }
 
 function pllIniciarPrediccion(){
@@ -3031,9 +3022,19 @@ function pllVerRanking(){
 
 // ════════════════ NAVEGACIÓN ════════════════
 function pllMostrarPantalla(id){
-  document.querySelectorAll('.pll-pantalla').forEach(p=>p.classList.remove('activa'));
+  // Forzar el cambio con estilos en línea (a prueba de conflictos de CSS)
+  const app=document.getElementById('pollaApp');
+  if(!app) return;
+  app.querySelectorAll('.pll-pantalla').forEach(p=>{
+    p.classList.remove('activa');
+    p.style.display='none';
+  });
   const el=document.getElementById('pll-pantalla-'+id);
-  if(el)el.classList.add('activa');
+  if(el){
+    el.classList.add('activa');
+    el.style.display='block';
+  }
+  window.scrollTo(0,0);
 }
 
 function pllToast(msg){
@@ -4046,15 +4047,6 @@ function amReiniciar(){
         💡 <strong>¿No puedes ingresar?</strong><br>
         Acércate a tu oficina ProyectoVision y verifica que tu pago esté registrado.
       </div>
-    </div>
-    <!-- Demo helper -->
-    <div style="margin-top:20px;background:rgba(255,215,0,.06);border:1px dashed rgba(255,215,0,.3);border-radius:12px;padding:14px;font-size:13px;color:var(--gris);line-height:1.7">
-      🧪 <strong style="color:var(--oro)">MODO PRUEBA</strong> — Cédulas de ejemplo:<br>
-      • <strong>111</strong> → Juan Pérez (El Doncello) - sin apostar<br>
-      • <strong>222</strong> → Ana Gómez (Florencia) - sin apostar<br>
-      • <strong>333</strong> → Pedro Ruiz (El Doncello, ya apostó)<br>
-      • <strong>999</strong> → cédula NO activa<br>
-      <em style="color:var(--gris);font-size:12px">Recuerda elegir la oficina correcta del cliente.</em>
     </div>
   </div>
 
