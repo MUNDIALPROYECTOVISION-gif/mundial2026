@@ -3064,12 +3064,25 @@ function desactivarAdminMode(){
 
 function abrirAdmin(){
   document.getElementById('adminApp').classList.add('activo');
-  document.getElementById('admLogin').style.display='block';
-  document.getElementById('admPanel').style.display='none';
-  document.getElementById('admPass').value='';
+  if(esAdminMode()){
+    // Ya inició sesión: ir directo al panel (no pedir contraseña otra vez)
+    document.getElementById('admLogin').style.display='none';
+    document.getElementById('admPanel').style.display='block';
+    admInitFiltros();
+    admRenderFiltrosOficinas();
+  } else {
+    document.getElementById('admLogin').style.display='block';
+    document.getElementById('admPanel').style.display='none';
+    document.getElementById('admPass').value='';
+  }
   window.scrollTo(0,0);
 }
 function cerrarAdmin(){
+  // Cierra el panel PERO sigue en modo admin, para poder marcar goles en los partidos
+  document.getElementById('adminApp').classList.remove('activo');
+}
+function salirAdmin(){
+  // Sale completamente del modo admin (vuelve a vista cliente)
   document.getElementById('adminApp').classList.remove('activo');
   desactivarAdminMode();
 }
@@ -4084,7 +4097,7 @@ function amReiniciar(){
       <div style="font-family:'Bebas Neue',sans-serif;font-size:20px;color:var(--oro);line-height:1">PANEL ADMINISTRADOR</div>
       <div style="font-size:11px;color:#00C2FF;letter-spacing:2px;font-weight:700">PROYECTOVISION · GESTIÓN POLLA</div>
     </div>
-    <button class="adm-cab-cerrar" onclick="cerrarAdmin()">✕</button>
+    <button class="adm-cab-cerrar" onclick="cerrarAdmin()" title="Minimizar panel (sigues en modo admin)">⤵️</button>
   </div>
 
   <!-- LOGIN -->
@@ -4101,6 +4114,9 @@ function amReiniciar(){
 
   <!-- PANEL -->
   <div class="adm-main" id="admPanel" style="display:none">
+    <div style="background:rgba(0,200,83,.1);border:1.5px solid rgba(0,200,83,.3);border-radius:12px;padding:12px 14px;margin-bottom:14px;font-size:13px;line-height:1.5;color:#fff">
+      ⚽ <strong>¿Vas a marcar o corregir goles?</strong> Toca <strong>⤵️ (arriba)</strong> para minimizar este panel y ver los partidos. Seguirás en modo admin con los botones de goles visibles. Para volver aquí, toca de nuevo la pestaña 🔐 del borde.
+    </div>
     <div class="adm-tabs">
       <button class="adm-tab activo" onclick="admTab('cargar',this)">📤 Cargar Excel</button>
       <button class="adm-tab" onclick="admTab('api',this)">📡 Marcadores API</button>
@@ -4310,6 +4326,8 @@ function amReiniciar(){
         <div id="admGanadoresResult" style="margin-top:16px"></div>
       </div>
     </div>
+
+    <button onclick="salirAdmin()" style="width:100%;padding:14px;margin-top:8px;background:rgba(232,0,29,.12);border:2px solid rgba(232,0,29,.3);border-radius:14px;color:#FF6B6B;font-family:'Nunito',sans-serif;font-size:15px;font-weight:900;cursor:pointer">🚪 Salir del modo administrador</button>
   </div>
 </div>
 
