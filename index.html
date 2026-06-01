@@ -1154,7 +1154,7 @@ const FB_OK = true;
 // ════ VERSIÓN DE LA APP ════
 // Sube este número cada vez que publiques una nueva versión en GitHub.
 // La app compara con la versión guardada en Firebase; si está vieja, obliga a recargar.
-const APP_VERSION = 10;
+const APP_VERSION = 11;
 console.log('🔥 Firebase conectado:', firebaseConfig.projectId);
 
 // ════ CONTROL DE VERSIÓN ════
@@ -3478,13 +3478,13 @@ function admCargarExcelOficina(event, oficina){
         if(ex && ex.yaAposto){ protegidos++; continue; }
         aGuardar.push({
           cedula: codigo,
-          documento: s.cedula,
+          documento: s.cedula || '',
           nombre: s.nombre||'Cliente',
-          telefono: s.tel,
+          telefono: s.tel || '',
           oficina: oficina,
           activa: true,
-          yaAposto: ex ? ex.yaAposto : false,
-          prediccion: ex ? ex.prediccion : null,
+          yaAposto: (ex && ex.yaAposto) ? true : false,
+          prediccion: (ex && ex.prediccion) ? ex.prediccion : null,
           actualizado: new Date().toISOString()
         });
       }
@@ -3497,15 +3497,16 @@ function admCargarExcelOficina(event, oficina){
         try{
           const batch = db.batch();
           lote.forEach(cl=>{
-            const ref = db.collection('clientes').doc(cl.cedula);
-            batch.set(ref, cl);
+            const id = String(cl.cedula).trim();
+            if(!id || id.includes('/') || id.length>1000) return;
+            batch.set(db.collection('clientes').doc(id), cl);
           });
           await batch.commit();
           lote.forEach(cl=>{ pllClientesDemo[cl.cedula]=cl; activados++; });
           msg.innerHTML=`⏳ Guardados ${activados} de ${aGuardar.length}...`;
         }catch(e){
           errores += lote.length;
-          console.error('Error en lote:',e);
+          console.error('❌ Error en lote:', e.code, e.message, e);
         }
       }
 
@@ -4353,10 +4354,14 @@ function ofCargarExcel(event){
         const ex = existentes[codigo];
         if(ex && ex.yaAposto){ protegidos++; continue; }
         aGuardar.push({
-          cedula: codigo, documento: s.cedula, nombre: s.nombre||'Cliente',
-          telefono: s.tel, oficina: oficina, activa: true,
-          yaAposto: ex ? ex.yaAposto : false,
-          prediccion: ex ? ex.prediccion : null,
+          cedula: codigo,
+          documento: s.cedula || '',
+          nombre: s.nombre || 'Cliente',
+          telefono: s.tel || '',
+          oficina: oficina,
+          activa: true,
+          yaAposto: (ex && ex.yaAposto) ? true : false,
+          prediccion: (ex && ex.prediccion) ? ex.prediccion : null,
           actualizado: new Date().toISOString()
         });
       }
@@ -4366,11 +4371,16 @@ function ofCargarExcel(event){
         const lote = aGuardar.slice(i,i+TAM);
         try{
           const batch = db.batch();
-          lote.forEach(cl=> batch.set(db.collection('clientes').doc(cl.cedula), cl));
+          lote.forEach(cl=>{
+            // Validar que el código sea un ID válido para Firestore (sin /, sin vacío)
+            const id = String(cl.cedula).trim();
+            if(!id || id.includes('/') || id.length>1000) return;
+            batch.set(db.collection('clientes').doc(id), cl);
+          });
           await batch.commit();
           activados += lote.length;
           msg.innerHTML='⏳ Guardados '+activados+' de '+aGuardar.length+'...';
-        }catch(err){ errores += lote.length; console.error(err); }
+        }catch(err){ errores += lote.length; console.error('❌ Error guardando lote:', err.code, err.message, err); }
       }
 
       msg.className='of-msg ok';
