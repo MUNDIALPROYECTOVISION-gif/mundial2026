@@ -1154,7 +1154,7 @@ const FB_OK = true;
 // ════ VERSIÓN DE LA APP ════
 // Sube este número cada vez que publiques una nueva versión en GitHub.
 // La app compara con la versión guardada en Firebase; si está vieja, obliga a recargar.
-const APP_VERSION = 9;
+const APP_VERSION = 10;
 console.log('🔥 Firebase conectado:', firebaseConfig.projectId);
 
 // ════ CONTROL DE VERSIÓN ════
@@ -3443,8 +3443,13 @@ function admCargarExcelOficina(event, oficina){
       // 1) Agrupar facturas por código de servicio
       const servicios = {}; // codigo -> {nombre, tel, cedula, facturas:[]}
       for(const fila of filas){
-        const usuario = colVal(fila, ['Usuario','usuario']);
-        const codigo = codigoServicio(usuario);
+        const usuario = colVal(fila, ['Usuario','usuario','USUARIO','Login','login','user']);
+        let codigo = codigoServicio(usuario);
+        if(!codigo){
+          // Sin columna "Usuario": usar la cédula/DNI como identificador
+          const dni = colVal(fila, ['DNI/C.I./C.C./IFE','DNI','Cédula','Cedula','cedula','Documento','documento']);
+          codigo = codigoServicio(dni);
+        }
         if(!codigo) continue;
         const nombre = colVal(fila, ['Cliente','cliente','Nombre']);
         const tel = colVal(fila, ['Telefono','Teléfono','telefono','Celular']);
@@ -4307,10 +4312,17 @@ function ofCargarExcel(event){
 
       // 3) Agrupar por servicio (reusa las mismas funciones del admin)
       const servicios = {};
-      let sinUsuario = 0;
+      let sinUsuario = 0, usoDNI = false, tieneColumnaUsuario = columnas.some(k=>k.normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim().toLowerCase()==='usuario');
       for(const fila of filas){
-        const usuario = colVal(fila, ['Usuario','usuario','USUARIO','Usuario ','Login','login','user']);
-        const codigo = codigoServicio(usuario);
+        // El código del servicio sale de "Usuario" (ej: 1117496916proyectovision@...).
+        // Si no existe esa columna, usamos "DNI/C.I./C.C./IFE" que trae el mismo número.
+        const usuario = colVal(fila, ['Usuario','usuario','USUARIO','Login','login','user']);
+        let codigo = codigoServicio(usuario);
+        if(!codigo){
+          const dni = colVal(fila, ['DNI/C.I./C.C./IFE','DNI','Cédula','Cedula','cedula','Documento','documento','ID Servicio','id servicio']);
+          codigo = codigoServicio(dni);
+          if(codigo) usoDNI = true;
+        }
         if(!codigo){ sinUsuario++; continue; }
         const nombre = colVal(fila, ['Cliente','cliente','Nombre','nombre','CLIENTE']);
         const tel = colVal(fila, ['Telefono','Teléfono','telefono','Celular','celular','TELEFONO']);
@@ -4321,12 +4333,12 @@ function ofCargarExcel(event){
         if(!servicios[codigo]) servicios[codigo]={codigo, nombre:limpiarNombre(nombre), tel, cedula, facturas:[]};
         servicios[codigo].facturas.push({estado, fechaPago, valor});
       }
-      console.log('👥 Servicios agrupados:', Object.keys(servicios).length, '| Filas sin usuario válido:', sinUsuario);
+      console.log('👥 Servicios agrupados:', Object.keys(servicios).length, '| Filas sin usuario válido:', sinUsuario, '| Usó DNI:', usoDNI);
 
       // Si no encontró NINGÚN servicio, avisar con las columnas que sí encontró
       if(Object.keys(servicios).length===0){
         msg.className='of-msg error';
-        msg.innerHTML='❌ No se encontró la columna <strong>"Usuario"</strong> en el Excel, o está vacía.<br><br>Columnas detectadas: <strong>'+columnas.join(', ')+'</strong><br><br>Verifica que el archivo sea el reporte de facturas correcto.';
+        msg.innerHTML='❌ No se encontró la columna <strong>"Usuario"</strong> ni <strong>"DNI/Cédula"</strong> en el Excel.<br><br>Columnas detectadas: <strong>'+columnas.join(', ')+'</strong><br><br>Asegúrate de exportar el reporte de facturas <u>completo</u> (el que incluye la columna Usuario o la cédula del cliente).';
         return;
       }
 
@@ -4367,6 +4379,7 @@ function ofCargarExcel(event){
         '• '+protegidos+' ya habían jugado (protegidos)<br>'+
         '• '+noCumplen+' no cumplen los requisitos'+
         (errores>0?'<br>⚠️ '+errores+' con error':'')+
+        (usoDNI?'<br><br>⚠️ <em>Este Excel no tenía la columna "Usuario", se usó la cédula. Para clientes con varios servicios, es mejor el reporte completo con columna "Usuario".</em>':'')+
         '<br><br>Tus clientes ya pueden entrar a la polla con su cédula. 🎉';
       event.target.value='';
     }catch(err){
