@@ -775,10 +775,38 @@ body.es-admin .admin-only{display:block;}
 #oficinaApp .of-badge{display:inline-block;background:rgba(0,200,83,.15);color:var(--verde);font-size:13px;font-weight:800;padding:6px 14px;border-radius:20px;margin-bottom:14px;}
 .of-acceso-btn{position:fixed;top:50%;right:0;transform:translateY(-50%) translateY(60px);z-index:6900;width:26px;height:46px;border-radius:12px 0 0 12px;background:rgba(20,40,60,.7);border:1.5px solid rgba(0,194,255,.4);border-right:none;color:rgba(0,194,255,.85);font-size:14px;cursor:pointer;box-shadow:-2px 2px 8px rgba(0,0,0,.3);opacity:.6;transition:opacity .2s;display:flex;align-items:center;justify-content:center;padding:0;}
 .of-acceso-btn:active{opacity:1;}
+#oficinaApp .of-tabs{display:flex;gap:8px;margin-bottom:16px;}
+#oficinaApp .of-tab{flex:1;padding:11px 6px;background:transparent;border:2px solid rgba(255,255,255,.12);color:var(--gris);font-family:'Nunito',sans-serif;font-size:13px;font-weight:800;border-radius:25px;cursor:pointer;white-space:nowrap;}
+#oficinaApp .of-tab.activo{background:rgba(0,194,255,.15);border-color:#00C2FF;color:#fff;}
+#oficinaApp .of-sec{display:none;}
+#oficinaApp .of-sec.activa{display:block;}
+#oficinaApp .of-stat-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px;}
+#oficinaApp .of-stat{background:var(--tarjeta);border:2px solid var(--borde);border-radius:14px;padding:14px 8px;text-align:center;}
+#oficinaApp .of-stat-n{font-family:'Bebas Neue',sans-serif;font-size:30px;color:#00C2FF;line-height:1;}
+#oficinaApp .of-stat-l{font-size:11px;color:var(--gris);font-weight:700;margin-top:3px;}
+#oficinaApp .of-tabla{width:100%;border-collapse:collapse;font-size:13px;}
+#oficinaApp .of-tabla th{text-align:left;padding:9px 7px;color:var(--gris);font-size:11px;font-weight:800;border-bottom:2px solid var(--borde);text-transform:uppercase;}
+#oficinaApp .of-tabla td{padding:9px 7px;border-bottom:1px solid rgba(255,255,255,.05);}
+#oficinaApp .of-mini-badge{font-size:10px;font-weight:800;padding:2px 7px;border-radius:7px;}
+#oficinaApp .of-mini-badge.jugo{background:rgba(0,200,83,.15);color:var(--verde);}
+#oficinaApp .of-mini-badge.falta{background:rgba(255,165,0,.12);color:#FFA500;}
+#oficinaApp .of-rank-fila{display:flex;align-items:center;gap:12px;padding:11px;background:var(--tarjeta);border:2px solid var(--borde);border-radius:12px;margin-bottom:8px;}
+#oficinaApp .of-rank-pos{font-family:'Bebas Neue',sans-serif;font-size:22px;width:34px;text-align:center;color:var(--oro);}
+#oficinaApp .of-rank-nombre{flex:1;font-size:15px;font-weight:800;}
+#oficinaApp .of-rank-pts{font-family:'Bebas Neue',sans-serif;font-size:24px;color:var(--verde);}
 
 </style>
 </head>
 <body>
+<!-- ════ PANTALLA DE ACTUALIZACIÓN REQUERIDA ════ -->
+<div id="updateOverlay" style="display:none;position:fixed;inset:0;z-index:99999;background:linear-gradient(160deg,#03091A,#001F5B,#03091A);flex-direction:column;align-items:center;justify-content:center;padding:30px;text-align:center;">
+  <div style="font-size:64px;margin-bottom:16px">🔄</div>
+  <div style="font-family:'Bebas Neue',sans-serif;font-size:32px;color:#FFD700;line-height:1.1;margin-bottom:10px">NUEVA VERSIÓN<br>DISPONIBLE</div>
+  <div style="font-size:16px;color:#fff;max-width:340px;line-height:1.6;margin-bottom:24px">Hay una versión más reciente de la app. Por favor recarga la página para continuar con las últimas mejoras.</div>
+  <button onclick="location.reload(true)" style="padding:18px 44px;background:linear-gradient(135deg,#E8001D,#8B0000);color:#fff;border:none;border-radius:50px;font-family:'Nunito',sans-serif;font-size:20px;font-weight:900;cursor:pointer;box-shadow:0 0 30px rgba(232,0,29,.5)">🔄 RECARGAR AHORA</button>
+  <div style="font-size:13px;color:#607D9F;margin-top:18px">Si el botón no funciona, cierra y vuelve a abrir la app.</div>
+</div>
+
 
 <!-- INTRO -->
 <div id="intro">
@@ -1123,7 +1151,31 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 const FB_OK = true;
+// ════ VERSIÓN DE LA APP ════
+// Sube este número cada vez que publiques una nueva versión en GitHub.
+// La app compara con la versión guardada en Firebase; si está vieja, obliga a recargar.
+const APP_VERSION = 8;
 console.log('🔥 Firebase conectado:', firebaseConfig.projectId);
+
+// ════ CONTROL DE VERSIÓN ════
+// Compara la versión local con la que está en Firebase. Si Firebase tiene una
+// versión mayor, bloquea la app hasta que el usuario recargue.
+function verificarVersion(){
+  if(!FB_OK) return;
+  try{
+    db.collection('config').doc('version').onSnapshot(doc=>{
+      if(doc.exists){
+        const vMin = doc.data().min || 0;
+        if(APP_VERSION < vMin){
+          // Versión vieja → bloquear todo
+          const ov = document.getElementById('updateOverlay');
+          if(ov) ov.style.display='flex';
+        }
+      }
+    });
+  }catch(e){ console.error('Error verificando versión:',e); }
+}
+verificarVersion();
 
 // ════ Registrar Service Worker (PWA) ════
 if('serviceWorker' in navigator){
@@ -3164,7 +3216,7 @@ function admTab(tab,btn){
   document.getElementById('admSec-'+tab).classList.add('activa');
   if(tab==='clientes') admRenderClientes();
   if(tab==='apuestas') admRenderApuestas();
-  if(tab==='config') admCargarConfigEnUI();
+  if(tab==='config'){ admCargarConfigEnUI(); admCargarVersionUI(); }
   if(tab==='cargar') admRenderFiltrosOficinas();
   if(tab==='api'){
     const el=document.getElementById('apiKeyInput');
@@ -3737,6 +3789,34 @@ async function admBorrarUsuariosPrueba(){
   msg.innerHTML=`✅ ${borrados} usuarios de prueba borrados.`;
   admRenderClientes();
 }
+// ════ Control de versión (admin) ════
+async function admCargarVersionUI(){
+  document.getElementById('admVersionLocal').textContent = APP_VERSION;
+  try{
+    const doc = await db.collection('config').doc('version').get();
+    const vMin = (doc.exists && doc.data().min) ? doc.data().min : 0;
+    document.getElementById('admVersionMin').textContent = vMin || 'ninguna';
+    const inp = document.getElementById('admVersionInput');
+    if(inp && !inp.value) inp.value = APP_VERSION;
+  }catch(e){ console.error(e); }
+}
+async function admGuardarVersion(){
+  const msg = document.getElementById('admVersionMsg');
+  const v = parseInt(document.getElementById('admVersionInput').value);
+  if(!v || v<1){ msg.className='adm-msg error'; msg.textContent='⚠️ Escribe un número de versión válido'; return; }
+  if(v > APP_VERSION){
+    if(!confirm(`⚠️ ATENCIÓN: vas a exigir la versión ${v}, pero la app que tienes abierta es la ${APP_VERSION}.\n\nSi aún no subiste la versión ${v} a GitHub, ¡TÚ MISMO quedarás bloqueado al recargar!\n\n¿Ya subiste la versión ${v} a GitHub?`)) return;
+  }
+  try{
+    await db.collection('config').doc('version').set({min:v, actualizado:new Date().toISOString()});
+    msg.className='adm-msg ok';
+    msg.innerHTML=`✅ Ahora se exige la versión <strong>${v}</strong>. Todos los que tengan una versión más vieja verán la pantalla de recarga.`;
+    admCargarVersionUI();
+  }catch(e){
+    msg.className='adm-msg error'; msg.textContent='❌ Error al guardar. Revisa tu conexión.'; console.error(e);
+  }
+}
+
 async function admGuardarConfigPolla(){
   const msg = document.getElementById('admConfigMsg');
   const tope = parseInt(document.getElementById('admCfgTope').value)||32;
@@ -4077,6 +4157,76 @@ function ofLogin(){
   document.getElementById('ofBadgeOficina').textContent = '🏢 ' + oficina;
 }
 
+// Cambiar de pestaña en la oficina
+function ofTab(tab, btn){
+  document.querySelectorAll('#oficinaApp .of-tab').forEach(t=>t.classList.remove('activo'));
+  btn.classList.add('activo');
+  document.querySelectorAll('#oficinaApp .of-sec').forEach(s=>s.classList.remove('activa'));
+  document.getElementById('ofSec-'+tab).classList.add('activa');
+  if(tab==='clientes') ofRenderClientes();
+  if(tab==='ranking') ofRenderRanking();
+}
+
+// Clientes de ESTA oficina (solo lectura)
+async function ofRenderClientes(){
+  if(!ofOficinaActual) return;
+  // Refrescar desde Firebase
+  const todos = await cargarTodosClientesFB();
+  pllClientesDemo = {...pllClientesDemo, ...todos};
+  const mios = Object.values(pllClientesDemo).filter(c=>c.oficina===ofOficinaActual);
+  const activos = mios.length;
+  const apostaron = mios.filter(c=>c.yaAposto).length;
+  const faltan = activos - apostaron;
+  document.getElementById('ofTotalActivos').textContent = activos;
+  document.getElementById('ofTotalApostaron').textContent = apostaron;
+  document.getElementById('ofTotalFaltan').textContent = faltan;
+
+  const busca = (document.getElementById('ofBuscarCliente')?.value||'').toLowerCase().trim();
+  let lista = mios;
+  if(busca) lista = lista.filter(c=> c.cedula.toLowerCase().includes(busca) || (c.nombre||'').toLowerCase().includes(busca));
+  lista.sort((a,b)=> (a.nombre||'').localeCompare(b.nombre||''));
+
+  const tabla = document.getElementById('ofTablaClientes');
+  tabla.innerHTML = `<tr><th>Código</th><th>Nombre</th><th>Estado</th></tr>` +
+    lista.map(c=>`<tr>
+      <td>${c.cedula}</td>
+      <td>${c.nombre||'—'}</td>
+      <td>${c.yaAposto?'<span class="of-mini-badge jugo">✅ Ya jugó</span>':'<span class="of-mini-badge falta">⏳ Falta</span>'}</td>
+    </tr>`).join('');
+  if(!lista.length) tabla.innerHTML += '<tr><td colspan="3" style="text-align:center;padding:18px;color:var(--gris)">Sin clientes todavía</td></tr>';
+}
+
+// Ranking de ESTA oficina (solo lectura) — quién acertó más equipos clasificados
+async function ofRenderRanking(){
+  if(!ofOficinaActual) return;
+  const todos = await cargarTodosClientesFB();
+  pllClientesDemo = {...pllClientesDemo, ...todos};
+  // Equipos que ya clasificaron (de koPartidos.r32)
+  let clasificados = [];
+  const r32 = (koPartidos&&koPartidos.r32)||[];
+  r32.forEach(m=>{ if(m.local)clasificados.push(m.local); if(m.visita)clasificados.push(m.visita); });
+
+  const mios = Object.values(pllClientesDemo).filter(c=>c.oficina===ofOficinaActual && c.yaAposto && c.prediccion);
+  const cont = document.getElementById('ofRankingLista');
+  if(!mios.length){
+    cont.innerHTML = '<div class="of-card" style="text-align:center;color:var(--gris)">Aún no hay clientes que hayan jugado en esta oficina.</div>';
+    return;
+  }
+  const tabla = mios.map(c=>{
+    const eq = Object.values(c.prediccion).flat();
+    const aciertos = clasificados.length ? eq.filter(e=>clasificados.includes(e)).length : 0;
+    return {nombre:c.nombre, aciertos};
+  }).sort((a,b)=>b.aciertos-a.aciertos);
+  const medallas=['🥇','🥈','🥉'];
+  const nota = clasificados.length ? '' : '<div style="text-align:center;color:var(--gris);font-size:12px;margin-top:8px">Aún no hay equipos clasificados. El ranking se llenará cuando termine la fase de grupos.</div>';
+  cont.innerHTML = tabla.map((j,i)=>`
+    <div class="of-rank-fila">
+      <div class="of-rank-pos">${medallas[i]||(i+1)}</div>
+      <div class="of-rank-nombre">${j.nombre}</div>
+      <div class="of-rank-pts">${j.aciertos}</div>
+    </div>`).join('') + nota;
+}
+
 // Cargar los filtros que el admin guardó para esta oficina
 async function ofObtenerFiltros(oficina){
   if(!FB_OK) return null;
@@ -4375,18 +4525,51 @@ function ofCargarExcel(event){
 
     <!-- CARGA (tras login) -->
     <div id="ofPanel" style="display:none">
-      <div class="of-card">
-        <div class="of-badge" id="ofBadgeOficina">🏢 Oficina</div>
-        <h3>📤 Subir Excel de pagos</h3>
-        <p>Sube el archivo Excel con los pagos de tus clientes. El sistema activará automáticamente a quienes cumplan los requisitos que definió el administrador. Los que ya hicieron su predicción quedan protegidos.</p>
-        <label class="of-file-label" for="ofExcelFile">📁 Seleccionar archivo Excel (.xlsx)</label>
-        <input type="file" id="ofExcelFile" accept=".xlsx,.xls,.csv" style="display:none" onchange="ofCargarExcel(event)">
-        <div class="of-msg" id="ofCargarMsg"></div>
+      <div class="of-badge" id="ofBadgeOficina" style="margin:0 0 14px">🏢 Oficina</div>
+      <div class="of-tabs">
+        <button class="of-tab activo" onclick="ofTab('subir',this)">📤 Subir Excel</button>
+        <button class="of-tab" onclick="ofTab('clientes',this)">👥 Mis clientes</button>
+        <button class="of-tab" onclick="ofTab('ranking',this)">🏆 Ranking</button>
       </div>
-      <div class="of-card">
-        <h3>ℹ️ ¿Cómo funciona?</h3>
-        <p>1. Descarga el reporte de facturas de tu oficina.<br>2. Súbelo aquí con el botón de arriba.<br>3. Espera el mensaje de confirmación con cuántos clientes quedaron activos.<br>4. ¡Listo! Tus clientes ya pueden entrar a la polla con su cédula.</p>
-        <button class="of-btn" style="background:rgba(255,255,255,.08);border:1.5px solid rgba(255,255,255,.15)" onclick="ofSalir()">🚪 Salir</button>
+
+      <!-- SUBIR -->
+      <div class="of-sec activa" id="ofSec-subir">
+        <div class="of-card">
+          <h3>📤 Subir Excel de pagos</h3>
+          <p>Sube el archivo Excel con los pagos de tus clientes. El sistema activará automáticamente a quienes cumplan los requisitos que definió el administrador. Los que ya hicieron su predicción quedan protegidos.</p>
+          <label class="of-file-label" for="ofExcelFile">📁 Seleccionar archivo Excel (.xlsx)</label>
+          <input type="file" id="ofExcelFile" accept=".xlsx,.xls,.csv" style="display:none" onchange="ofCargarExcel(event)">
+          <div class="of-msg" id="ofCargarMsg"></div>
+        </div>
+        <div class="of-card">
+          <h3>ℹ️ ¿Cómo funciona?</h3>
+          <p>1. Descarga el reporte de facturas de tu oficina.<br>2. Súbelo aquí con el botón de arriba.<br>3. Espera el mensaje de confirmación con cuántos clientes quedaron activos.<br>4. ¡Listo! Tus clientes ya pueden entrar a la polla con su cédula.</p>
+          <button class="of-btn" style="background:rgba(255,255,255,.08);border:1.5px solid rgba(255,255,255,.15)" onclick="ofSalir()">🚪 Salir</button>
+        </div>
+      </div>
+
+      <!-- CLIENTES (solo lectura) -->
+      <div class="of-sec" id="ofSec-clientes">
+        <div class="of-stat-grid">
+          <div class="of-stat"><div class="of-stat-n" id="ofTotalActivos">0</div><div class="of-stat-l">Activos</div></div>
+          <div class="of-stat"><div class="of-stat-n" id="ofTotalApostaron">0</div><div class="of-stat-l">Ya jugaron</div></div>
+          <div class="of-stat"><div class="of-stat-n" id="ofTotalFaltan">0</div><div class="of-stat-l">Faltan</div></div>
+        </div>
+        <button class="of-btn" style="background:rgba(0,194,255,.1);border:1.5px solid rgba(0,194,255,.3);margin-bottom:12px" onclick="ofRenderClientes()">🔄 Actualizar</button>
+        <input class="of-input" id="ofBuscarCliente" placeholder="🔍 Buscar por cédula o nombre" oninput="ofRenderClientes()" style="margin-bottom:12px">
+        <div class="of-card" style="padding:10px">
+          <div style="overflow-x:auto"><table class="of-tabla" id="ofTablaClientes"></table></div>
+        </div>
+      </div>
+
+      <!-- RANKING (solo lectura) -->
+      <div class="of-sec" id="ofSec-ranking">
+        <div class="of-card">
+          <h3>🏆 Ranking de mi oficina</h3>
+          <p>Quiénes van ganando en tu oficina (según los equipos que ya clasificaron).</p>
+          <button class="of-btn" style="background:rgba(0,194,255,.1);border:1.5px solid rgba(0,194,255,.3);margin-bottom:6px" onclick="ofRenderRanking()">🔄 Actualizar ranking</button>
+        </div>
+        <div id="ofRankingLista"></div>
       </div>
     </div>
   </div>
@@ -4586,6 +4769,22 @@ function ofCargarExcel(event){
       <div class="adm-card">
         <h3>📌 Cómo funciona</h3>
         <p>• El cliente elige libremente entre el mínimo y el máximo por grupo.<br>• Debe completar exactamente el total que fijaste para poder confirmar.<br>• 🏆 Gana quien acierte TODOS los equipos exactos que clasifiquen (no el que más tenga).<br>• <strong>Cámbialo antes de que empiecen a apostar</strong> — si ya hay apuestas, cambiar esto puede descuadrar las predicciones existentes.</p>
+      </div>
+
+      <div class="adm-card">
+        <h3>🔄 Control de versión</h3>
+        <p>Cuando subas una versión nueva a GitHub, sube aquí el número para obligar a todos a recargar. Los que tengan una versión vieja verán una pantalla de "recarga" y no podrán usar la app hasta actualizar.</p>
+        <div style="background:rgba(0,194,255,.05);border:1px solid rgba(0,194,255,.2);border-radius:10px;padding:12px;margin-bottom:12px;font-size:14px">
+          <div style="color:var(--gris)">Versión de ESTA app (la que tienes abierta):</div>
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;color:#00C2FF" id="admVersionLocal">—</div>
+          <div style="color:var(--gris);margin-top:6px">Versión mínima exigida ahora mismo:</div>
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;color:var(--oro)" id="admVersionMin">—</div>
+        </div>
+        <label class="adm-label" style="display:block;font-size:13px;font-weight:800;color:var(--gris);margin-bottom:6px">Exigir esta versión mínima a todos:</label>
+        <input type="number" id="admVersionInput" class="adm-mini-input" style="width:100%;margin-bottom:10px" placeholder="Ej: 7">
+        <button class="adm-btn" onclick="admGuardarVersion()">🔄 Exigir esta versión a todos</button>
+        <div class="adm-msg" id="admVersionMsg"></div>
+        <div style="font-size:12px;color:var(--gris);margin-top:10px;line-height:1.5">💡 <strong>Importante:</strong> Primero sube el nuevo <code>index.html</code> a GitHub (con su número de versión más alto), espera 2 minutos, y SOLO ENTONCES exige esa versión aquí. Si exiges una versión que aún no subiste, ¡hasta tú quedarás bloqueado!</div>
       </div>
     </div>
 
