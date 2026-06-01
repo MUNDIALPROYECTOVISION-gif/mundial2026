@@ -754,6 +754,28 @@ body.es-admin .admin-only{display:block;}
 #amigosApp .am-pred-bloqueada{margin-top:8px;font-size:12px;font-weight:800;color:var(--oro);}
 #amigosApp .am-opcion-bloq{opacity:.35;}
 
+
+/* ════ CARGA DE OFICINA (sin admin) ════ */
+#oficinaApp{position:fixed;inset:0;z-index:6500;background:var(--fondo);overflow-y:auto;-webkit-overflow-scrolling:touch;display:none;}
+#oficinaApp.activo{display:block;}
+#oficinaApp .of-cab{position:sticky;top:0;z-index:100;background:rgba(8,24,48,.97);backdrop-filter:blur(20px);border-bottom:3px solid #00C2FF;padding:14px 18px;display:flex;align-items:center;gap:12px;}
+#oficinaApp .of-cab-cerrar{margin-left:auto;background:rgba(255,255,255,.1);border:none;color:#fff;font-size:18px;width:40px;height:40px;border-radius:50%;cursor:pointer;font-weight:900;}
+#oficinaApp .of-main{padding:18px;max-width:560px;margin:0 auto;padding-bottom:calc(40px + env(safe-area-inset-bottom));}
+#oficinaApp .of-card{background:var(--tarjeta);border:2px solid var(--borde);border-radius:18px;padding:22px;margin-bottom:16px;}
+#oficinaApp .of-card h3{font-size:18px;font-weight:900;color:#00C2FF;margin-bottom:8px;}
+#oficinaApp .of-card p{font-size:14px;color:var(--gris);line-height:1.6;margin-bottom:16px;}
+#oficinaApp .of-label{display:block;font-size:13px;font-weight:800;color:var(--gris);margin-bottom:8px;}
+#oficinaApp .of-select,#oficinaApp .of-input{width:100%;padding:15px;background:rgba(0,194,255,.06);border:2px solid rgba(0,194,255,.3);border-radius:12px;color:#fff;font-family:'Nunito',sans-serif;font-size:16px;font-weight:700;outline:none;margin-bottom:14px;}
+#oficinaApp .of-btn{width:100%;padding:16px;background:linear-gradient(135deg,#00C2FF,#0090CC);border:none;border-radius:14px;color:#fff;font-family:'Nunito',sans-serif;font-size:17px;font-weight:900;cursor:pointer;}
+#oficinaApp .of-btn:active{transform:scale(.98);}
+#oficinaApp .of-file-label{display:block;width:100%;padding:18px;background:rgba(0,200,83,.08);border:2px dashed rgba(0,200,83,.45);border-radius:14px;color:var(--verde);font-size:16px;font-weight:800;text-align:center;cursor:pointer;margin-bottom:12px;}
+#oficinaApp .of-msg{padding:14px;border-radius:12px;font-size:14px;font-weight:700;margin-top:8px;display:none;line-height:1.5;}
+#oficinaApp .of-msg.ok{background:rgba(0,200,83,.12);border:1.5px solid rgba(0,200,83,.3);color:var(--verde);display:block;}
+#oficinaApp .of-msg.error{background:rgba(232,0,29,.12);border:1.5px solid rgba(232,0,29,.3);color:#FF6B6B;display:block;}
+#oficinaApp .of-badge{display:inline-block;background:rgba(0,200,83,.15);color:var(--verde);font-size:13px;font-weight:800;padding:6px 14px;border-radius:20px;margin-bottom:14px;}
+#oficinaApp .of-acceso-btn{position:fixed;top:50%;right:0;transform:translateY(-50%) translateY(60px);z-index:6900;width:26px;height:46px;border-radius:12px 0 0 12px;background:rgba(20,40,60,.55);border:1.5px solid rgba(0,194,255,.3);border-right:none;color:rgba(0,194,255,.6);font-size:14px;cursor:pointer;box-shadow:-2px 2px 8px rgba(0,0,0,.3);opacity:.45;transition:opacity .2s;display:flex;align-items:center;justify-content:center;padding:0;}
+#oficinaApp .of-acceso-btn:active{opacity:1;}
+
 </style>
 </head>
 <body>
@@ -3976,6 +3998,150 @@ function amReiniciar(){
   amRenderJugadores(); amRenderPartidos(); amRenderRanking();
 }
 
+
+// ════════════════════════════════════════════════════════════════
+// CARGA DE OFICINA (cada oficina sube su Excel sin entrar al admin)
+// ════════════════════════════════════════════════════════════════
+// Claves de cada oficina (cámbialas por las que quieras darle a cada una)
+const CLAVES_OFICINA = {
+  'Florencia': 'flor2026',
+  'El Paujil': 'paujil2026',
+  'El Doncello': 'doncello2026',
+  'Cartagena del Chairá': 'cartagena2026'
+};
+let ofOficinaActual = null;
+
+function abrirOficina(){
+  document.getElementById('oficinaApp').classList.add('activo');
+  document.getElementById('ofLogin').style.display='block';
+  document.getElementById('ofPanel').style.display='none';
+  document.getElementById('ofPass').value='';
+  document.getElementById('ofLoginMsg').className='of-msg';
+  ofOficinaActual=null;
+  window.scrollTo(0,0);
+}
+function cerrarOficina(){
+  document.getElementById('oficinaApp').classList.remove('activo');
+}
+function ofSalir(){
+  ofOficinaActual=null;
+  document.getElementById('oficinaApp').classList.remove('activo');
+}
+function ofLogin(){
+  const oficina = document.getElementById('ofSelectOficina').value;
+  const pass = document.getElementById('ofPass').value.trim();
+  const msg = document.getElementById('ofLoginMsg');
+  if(!oficina){ msg.className='of-msg error'; msg.textContent='⚠️ Elige tu oficina primero'; return; }
+  if(CLAVES_OFICINA[oficina] !== pass){
+    msg.className='of-msg error'; msg.textContent='❌ Clave incorrecta para esta oficina'; return;
+  }
+  ofOficinaActual = oficina;
+  document.getElementById('ofLogin').style.display='none';
+  document.getElementById('ofPanel').style.display='block';
+  document.getElementById('ofBadgeOficina').textContent = '🏢 ' + oficina;
+}
+
+// Cargar los filtros que el admin guardó para esta oficina
+async function ofObtenerFiltros(oficina){
+  if(!FB_OK) return null;
+  try{
+    const doc = await db.collection('config').doc('filtros_'+oficina).get();
+    if(doc.exists && doc.data().filtros) return doc.data().filtros;
+  }catch(e){ console.error('Error leyendo filtros:',e); }
+  return null;
+}
+
+function ofCargarExcel(event){
+  const file = event.target.files[0];
+  const msg = document.getElementById('ofCargarMsg');
+  if(!file) return;
+  if(!ofOficinaActual){ msg.className='of-msg error'; msg.textContent='⚠️ Sesión no válida, vuelve a ingresar.'; return; }
+  const oficina = ofOficinaActual;
+  msg.className='of-msg ok';
+  msg.textContent='⏳ Procesando Excel de '+oficina+'...';
+
+  const reader = new FileReader();
+  reader.onload = async function(e){
+    try{
+      // 1) Obtener los filtros configurados por el admin para esta oficina
+      let filtros = await ofObtenerFiltros(oficina);
+      if(!filtros){
+        // Si el admin no configuró filtros, usar por defecto: al menos 1 pagada
+        filtros = {pagada:true, sinPend:false, mes:false, rango:false, monto:false};
+        msg.className='of-msg ok';
+        msg.innerHTML='ℹ️ El administrador no configuró filtros para esta oficina. Se usará el filtro básico (al menos 1 factura pagada).<br>⏳ Procesando...';
+      }
+
+      // 2) Leer el Excel
+      const data = new Uint8Array(e.target.result);
+      const wb = XLSX.read(data,{type:'array'});
+      const sheet = wb.Sheets[wb.SheetNames[0]];
+      const filas = XLSX.utils.sheet_to_json(sheet,{defval:''});
+
+      // 3) Agrupar por servicio (reusa las mismas funciones del admin)
+      const servicios = {};
+      for(const fila of filas){
+        const usuario = colVal(fila, ['Usuario','usuario']);
+        const codigo = codigoServicio(usuario);
+        if(!codigo) continue;
+        const nombre = colVal(fila, ['Cliente','cliente','Nombre']);
+        const tel = colVal(fila, ['Telefono','Teléfono','telefono','Celular']);
+        const cedula = colVal(fila, ['DNI/C.I./C.C./IFE','Cédula','Cedula','cedula','Documento','DNI']);
+        const estado = colVal(fila, ['Estado','estado']);
+        const fechaPago = colVal(fila, ['Fecha Pago','fecha pago','FechaPago']);
+        const valor = colVal(fila, ['Total Cobrado','total cobrado','Valor Pagado','Valor','valor']);
+        if(!servicios[codigo]) servicios[codigo]={codigo, nombre:limpiarNombre(nombre), tel, cedula, facturas:[]};
+        servicios[codigo].facturas.push({estado, fechaPago, valor});
+      }
+
+      // 4) Filtrar y guardar en lote
+      let activados=0, protegidos=0, noCumplen=0, errores=0;
+      msg.innerHTML='⏳ Leyendo registros existentes...';
+      const existentes = await cargarTodosClientesFB();
+      const aGuardar = [];
+      for(const codigo of Object.keys(servicios)){
+        const s = servicios[codigo];
+        if(!servicioCumpleFiltros(s.facturas, filtros)){ noCumplen++; continue; }
+        const ex = existentes[codigo];
+        if(ex && ex.yaAposto){ protegidos++; continue; }
+        aGuardar.push({
+          cedula: codigo, documento: s.cedula, nombre: s.nombre||'Cliente',
+          telefono: s.tel, oficina: oficina, activa: true,
+          yaAposto: ex ? ex.yaAposto : false,
+          prediccion: ex ? ex.prediccion : null,
+          actualizado: new Date().toISOString()
+        });
+      }
+      msg.innerHTML='⏳ Guardando '+aGuardar.length+' servicios...';
+      const TAM=400;
+      for(let i=0;i<aGuardar.length;i+=TAM){
+        const lote = aGuardar.slice(i,i+TAM);
+        try{
+          const batch = db.batch();
+          lote.forEach(cl=> batch.set(db.collection('clientes').doc(cl.cedula), cl));
+          await batch.commit();
+          activados += lote.length;
+          msg.innerHTML='⏳ Guardados '+activados+' de '+aGuardar.length+'...';
+        }catch(err){ errores += lote.length; console.error(err); }
+      }
+
+      msg.className='of-msg ok';
+      msg.innerHTML='✅ <strong>¡Listo, '+oficina+'!</strong><br>'+
+        '• '+activados+' clientes activados<br>'+
+        '• '+protegidos+' ya habían jugado (protegidos)<br>'+
+        '• '+noCumplen+' no cumplen los requisitos'+
+        (errores>0?'<br>⚠️ '+errores+' con error':'')+
+        '<br><br>Tus clientes ya pueden entrar a la polla con su cédula. 🎉';
+      event.target.value='';
+    }catch(err){
+      msg.className='of-msg error';
+      msg.textContent='❌ Error al leer el Excel. Verifica que sea el archivo correcto.';
+      console.error(err);
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
 </script>
 
 
@@ -4138,6 +4304,59 @@ function amReiniciar(){
   <div id="pllToastEl" style="position:fixed;bottom:90px;left:50%;transform:translateX(-50%) translateY(100px);background:rgba(232,0,29,.18);border:2px solid rgba(232,0,29,.4);color:#FFB0B0;padding:14px 24px;border-radius:50px;font-size:15px;font-weight:800;z-index:9000;opacity:0;transition:all .4s cubic-bezier(.175,.885,.32,1.275);white-space:nowrap;max-width:90vw;text-align:center;"></div>
 </div>
 
+
+
+<!-- ════ CARGA DE OFICINA (sin admin) ════ -->
+<div id="oficinaApp">
+  <div class="of-cab">
+    <span style="font-size:24px">🏢</span>
+    <div>
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:19px;color:#00C2FF;line-height:1">CARGA DE OFICINA</div>
+      <div style="font-size:10px;color:var(--gris);letter-spacing:1px;font-weight:700">SUBE EL EXCEL DE TUS CLIENTES</div>
+    </div>
+    <button class="of-cab-cerrar" onclick="cerrarOficina()">✕</button>
+  </div>
+  <div class="of-main">
+    <!-- LOGIN OFICINA -->
+    <div id="ofLogin">
+      <div class="of-card">
+        <h3>🏢 Ingreso de Oficina</h3>
+        <p>Elige tu oficina y escribe la clave que te dio el administrador para subir el Excel de tus clientes.</p>
+        <label class="of-label">Oficina</label>
+        <select class="of-select" id="ofSelectOficina">
+          <option value="">— Elige tu oficina —</option>
+          <option value="Florencia">🏙️ Florencia</option>
+          <option value="El Paujil">🌿 El Paujil</option>
+          <option value="El Doncello">🌄 El Doncello</option>
+          <option value="Cartagena del Chairá">⛵ Cartagena del Chairá</option>
+        </select>
+        <label class="of-label">Clave de la oficina</label>
+        <input class="of-input" id="ofPass" type="password" placeholder="Clave" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" onkeypress="if(event.key==='Enter')ofLogin()">
+        <button class="of-btn" onclick="ofLogin()">INGRESAR</button>
+        <div class="of-msg" id="ofLoginMsg"></div>
+      </div>
+    </div>
+
+    <!-- CARGA (tras login) -->
+    <div id="ofPanel" style="display:none">
+      <div class="of-card">
+        <div class="of-badge" id="ofBadgeOficina">🏢 Oficina</div>
+        <h3>📤 Subir Excel de pagos</h3>
+        <p>Sube el archivo Excel con los pagos de tus clientes. El sistema activará automáticamente a quienes cumplan los requisitos que definió el administrador. Los que ya hicieron su predicción quedan protegidos.</p>
+        <label class="of-file-label" for="ofExcelFile">📁 Seleccionar archivo Excel (.xlsx)</label>
+        <input type="file" id="ofExcelFile" accept=".xlsx,.xls,.csv" style="display:none" onchange="ofCargarExcel(event)">
+        <div class="of-msg" id="ofCargarMsg"></div>
+      </div>
+      <div class="of-card">
+        <h3>ℹ️ ¿Cómo funciona?</h3>
+        <p>1. Descarga el reporte de facturas de tu oficina.<br>2. Súbelo aquí con el botón de arriba.<br>3. Espera el mensaje de confirmación con cuántos clientes quedaron activos.<br>4. ¡Listo! Tus clientes ya pueden entrar a la polla con su cédula.</p>
+        <button class="of-btn" style="background:rgba(255,255,255,.08);border:1.5px solid rgba(255,255,255,.15)" onclick="ofSalir()">🚪 Salir</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<button class="of-acceso-btn" onclick="abrirOficina()" title="Carga de Oficina">🏢</button>
 
 <!-- ════ PORTAL ADMIN ════ -->
 <div id="adminApp">
