@@ -1154,7 +1154,7 @@ const FB_OK = true;
 // ════ VERSIÓN DE LA APP ════
 // Sube este número cada vez que publiques una nueva versión en GitHub.
 // La app compara con la versión guardada en Firebase; si está vieja, obliga a recargar.
-const APP_VERSION = 11;
+const APP_VERSION = 12;
 console.log('🔥 Firebase conectado:', firebaseConfig.projectId);
 
 // ════ CONTROL DE VERSIÓN ════
@@ -2870,11 +2870,11 @@ function pllSeleccionarOficina(oficina,btn){
 // ════════════════ INGRESO ════════════════
 async function pllIngresar(){
   const msg=document.getElementById('pll_ingresoMsg');
-  // Fecha límite: las predicciones cierran después del 10 de junio de 2026 (23:59)
-  const cierrePolla = new Date('2026-06-10T23:59:59');
+  // Fecha límite: las predicciones cierran después del 16 de junio de 2026 (23:59)
+  const cierrePolla = new Date('2026-06-16T23:59:59');
   if(new Date() > cierrePolla){
     msg.className='ingreso-msg error';
-    msg.innerHTML='⏰ <strong>Las predicciones ya cerraron.</strong><br>El plazo para participar terminó el 10 de junio. ¡Mucha suerte a los que alcanzaron a jugar!';
+    msg.innerHTML='⏰ <strong>Las predicciones ya cerraron.</strong><br>El plazo para participar terminó el 16 de junio. ¡Mucha suerte a los que alcanzaron a jugar!';
     return;
   }
   if(!pllOficinaSeleccionada){
@@ -3079,9 +3079,9 @@ function pllCerrarModal(){document.getElementById('pll_modalResumen').classList.
 
 function pllConfirmarApuesta(){
   // Verificar que no haya pasado la fecha límite
-  if(new Date() > new Date('2026-06-10T23:59:59')){
+  if(new Date() > new Date('2026-06-16T23:59:59')){
     pllCerrarModal();
-    alert('⏰ Las predicciones cerraron el 10 de junio. Ya no es posible confirmar.');
+    alert('⏰ Las predicciones cerraron el 16 de junio. Ya no es posible confirmar.');
     return;
   }
   // Guardar en "base de datos" demo
@@ -4466,7 +4466,7 @@ function ofCargarExcel(event){
       <div class="ingreso-icono">🎫</div>
       <div class="ingreso-titulo">¡Participa y gana!</div>
       <div class="ingreso-sub">Si ya pagaste tu factura, participa en la polla del Mundial.</div>
-      <div style="background:rgba(255,165,0,.1);border:1.5px solid rgba(255,165,0,.35);border-radius:12px;padding:10px 12px;margin:12px 0;font-size:13px;color:#FFB84D;font-weight:700;text-align:center">⏰ Tienes plazo para participar hasta el <strong>10 de junio</strong></div>
+      <div style="background:rgba(255,165,0,.1);border:1.5px solid rgba(255,165,0,.35);border-radius:12px;padding:10px 12px;margin:12px 0;font-size:13px;color:#FFB84D;font-weight:700;text-align:center">⏰ Tienes plazo para participar hasta el <strong>16 de junio</strong></div>
 
       <label class="ingreso-label">1️⃣ SELECCIONA TU OFICINA</label>
       <div class="oficinas-grid" id="pll_oficinasGrid">
