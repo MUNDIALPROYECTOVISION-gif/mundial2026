@@ -1154,7 +1154,7 @@ const FB_OK = true;
 // ════ VERSIÓN DE LA APP ════
 // Sube este número cada vez que publiques una nueva versión en GitHub.
 // La app compara con la versión guardada en Firebase; si está vieja, obliga a recargar.
-const APP_VERSION = 12;
+const APP_VERSION = 13;
 console.log('🔥 Firebase conectado:', firebaseConfig.projectId);
 
 // ════ CONTROL DE VERSIÓN ════
@@ -3583,6 +3583,79 @@ async function admEliminarCliente(cedula){
   }
 }
 
+// ════ RESPALDO DE SEGURIDAD ════
+async function admDescargarRespaldo(){
+  const msg = document.getElementById('admRespaldoMsg');
+  msg.className='adm-msg ok'; msg.textContent='⏳ Generando respaldo...';
+  try{
+    const clientes = await cargarTodosClientesFB();
+    const respaldo = {
+      fecha: new Date().toISOString(),
+      version: APP_VERSION,
+      totalClientes: Object.keys(clientes).length,
+      clientes: clientes
+    };
+    const txt = JSON.stringify(respaldo, null, 2);
+    const blob = new Blob([txt], {type:'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    const fechaTxt = new Date().toISOString().slice(0,16).replace(/[:T]/g,'-');
+    a.href = url;
+    a.download = 'respaldo_polla_'+fechaTxt+'.json';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    msg.className='adm-msg ok';
+    msg.innerHTML='✅ Respaldo descargado con <strong>'+respaldo.totalClientes+'</strong> clientes. Guárdalo en un lugar seguro.';
+  }catch(e){
+    msg.className='adm-msg error'; msg.textContent='❌ Error al generar el respaldo. Revisa tu conexión.';
+    console.error(e);
+  }
+}
+
+async function admRestaurarRespaldo(event){
+  const file = event.target.files[0];
+  const msg = document.getElementById('admRespaldoMsg');
+  if(!file) return;
+  if(!confirm('⚠️ RESTAURAR RESPALDO\n\nEsto va a volver a guardar en Firebase todos los clientes y predicciones del archivo de respaldo.\n\nLos clientes que existan ahora se sobrescribirán con los del respaldo. ¿Continuar?')) {
+    event.target.value=''; return;
+  }
+  msg.className='adm-msg ok'; msg.textContent='⏳ Leyendo respaldo...';
+  const reader = new FileReader();
+  reader.onload = async function(e){
+    try{
+      const respaldo = JSON.parse(e.target.result);
+      if(!respaldo.clientes){ msg.className='adm-msg error'; msg.textContent='❌ El archivo no es un respaldo válido.'; return; }
+      const lista = Object.values(respaldo.clientes);
+      let guardados=0, errores=0;
+      const TAM=400;
+      for(let i=0;i<lista.length;i+=TAM){
+        const lote = lista.slice(i,i+TAM);
+        try{
+          const batch = db.batch();
+          lote.forEach(cl=>{
+            const id = String(cl.cedula).trim();
+            if(!id || id.includes('/')) return;
+            batch.set(db.collection('clientes').doc(id), cl);
+          });
+          await batch.commit();
+          guardados += lote.length;
+          msg.innerHTML='⏳ Restaurados '+guardados+' de '+lista.length+'...';
+        }catch(err){ errores += lote.length; console.error(err); }
+      }
+      msg.className='adm-msg ok';
+      msg.innerHTML='✅ Respaldo restaurado: <strong>'+guardados+'</strong> clientes'+(errores>0?'<br>⚠️ '+errores+' con error':'')+'.';
+      admRenderClientes();
+      event.target.value='';
+    }catch(err){
+      msg.className='adm-msg error'; msg.textContent='❌ Error al leer el respaldo. ¿El archivo está completo?';
+      console.error(err);
+    }
+  };
+  reader.readAsText(file);
+}
+
 // Eliminar TODOS los clientes de una oficina (en lote, rápido)
 async function admBorrarOficinaClientes(){
   const oficina=document.getElementById('admBorrarOficina').value;
@@ -4867,6 +4940,16 @@ function ofCargarExcel(event){
         <div class="adm-stat"><div class="adm-stat-n" id="admTotalClientes">0</div><div class="adm-stat-l">Clientes activos</div></div>
         <div class="adm-stat"><div class="adm-stat-n" id="admTotalApostaron">0</div><div class="adm-stat-l">Ya apostaron</div></div>
       </div>
+      <div class="adm-card" style="padding:14px;margin-bottom:12px;border:2px solid rgba(0,200,83,.4)">
+        <h3 style="font-size:15px;margin-bottom:8px;color:var(--verde)">💾 Respaldo de seguridad</h3>
+        <p style="font-size:13px;margin-bottom:10px">Descarga una copia de TODOS los clientes y sus predicciones. Guárdala antes de hacer cambios importantes. Si algo sale mal, puedes restaurarla.</p>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn-api" style="flex:1;min-width:140px;background:rgba(0,200,83,.15);border:2px solid rgba(0,200,83,.4);color:var(--verde)" onclick="admDescargarRespaldo()">💾 Descargar respaldo</button>
+          <label class="btn-api" style="flex:1;min-width:140px;background:rgba(0,194,255,.1);border:2px solid rgba(0,194,255,.3);color:#00C2FF;text-align:center;cursor:pointer">📥 Restaurar respaldo<input type="file" accept=".json" style="display:none" onchange="admRestaurarRespaldo(event)"></label>
+        </div>
+        <div class="adm-msg" id="admRespaldoMsg"></div>
+      </div>
+
       <div class="adm-card" style="padding:14px;margin-bottom:12px">
         <h3 style="font-size:15px;margin-bottom:8px">🧪 Usuarios de prueba</h3>
         <p style="font-size:13px;margin-bottom:10px">Crea usuarios falsos para probar la polla, o bórralos todos cuando termines.</p>
