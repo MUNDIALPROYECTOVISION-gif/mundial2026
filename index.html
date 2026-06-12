@@ -1154,7 +1154,7 @@ const FB_OK = true;
 // ════ VERSIÓN DE LA APP ════
 // Sube este número cada vez que publiques una nueva versión en GitHub.
 // La app compara con la versión guardada en Firebase; si está vieja, obliga a recargar.
-const APP_VERSION = 13;
+const APP_VERSION = 14;
 console.log('🔥 Firebase conectado:', firebaseConfig.projectId);
 
 // ════ CONTROL DE VERSIÓN ════
@@ -1207,12 +1207,12 @@ if('serviceWorker' in navigator){
 </script>
 <script>
 // ── DATOS ──────────────────────────────────────────────────────────────────
-const FLAGS={mexico:'mx',sudafrica:'za',corea:'kr',checa:'cz',canada:'ca',bosnia:'ba',suiza:'ch',qatar:'qa',brasil:'br',marruecos:'ma',haiti:'ht',escocia:'gb-sct',eeuu:'us',turquia:'tr',australia:'au',paraguay:'py',alemania:'de',curazao:'cw',noruega:'no',jordania:'jo',paises_bajos:'nl',japon:'jp',suecia:'se',tunez:'tn',belgica:'be',iran:'ir',nueva_zelanda:'nz',egipto:'eg',espana:'es',uruguay:'uy',arabia:'sa',cabo_verde:'cv',francia:'fr',senegal:'sn',uzbekistan:'uz',costa_marfil:'ci',argentina:'ar',argelia:'dz',austria:'at',ecuador:'ec',portugal:'pt',colombia:'co',irak:'iq',ghana:'gh',inglaterra:'gb-eng',croacia:'hr',panama:'pa'};
+const FLAGS={mexico:'mx',sudafrica:'za',corea:'kr',checa:'cz',canada:'ca',bosnia:'ba',suiza:'ch',qatar:'qa',brasil:'br',marruecos:'ma',haiti:'ht',escocia:'gb-sct',eeuu:'us',turquia:'tr',australia:'au',paraguay:'py',alemania:'de',curazao:'cw',noruega:'no',jordania:'jo',paises_bajos:'nl',japon:'jp',suecia:'se',tunez:'tn',belgica:'be',iran:'ir',nueva_zelanda:'nz',egipto:'eg',espana:'es',uruguay:'uy',arabia:'sa',cabo_verde:'cv',francia:'fr',senegal:'sn',uzbekistan:'uz',costa_marfil:'ci',argentina:'ar',argelia:'dz',austria:'at',ecuador:'ec',portugal:'pt',colombia:'co',irak:'iq',ghana:'gh',inglaterra:'gb-eng',croacia:'hr',panama:'pa',rdcongo:'cd'};
 const fUrl=(k,w=80)=>`https://flagcdn.com/w${w}/${FLAGS[k]||'un'}.png`;
 const fImg=(k,cls='equipo-bandera',alt='')=>`<img src="${fUrl(k)}" class="${cls}" alt="${alt||k}" onerror="this.style.display='none'">`;
 const cop=n=>'$'+Number(n).toLocaleString('es-CO');
 
-const EQUIPOS={mexico:{n:'México',h:true},sudafrica:{n:'Sudáfrica',h:false},corea:{n:'Corea del Sur',h:false},checa:{n:'Rep. Checa',h:false},canada:{n:'Canadá',h:true},bosnia:{n:'Bosnia',h:false},suiza:{n:'Suiza',h:false},qatar:{n:'Qatar',h:false},brasil:{n:'Brasil',h:false},marruecos:{n:'Marruecos',h:false},haiti:{n:'Haití',h:false},escocia:{n:'Escocia',h:false},eeuu:{n:'EE.UU.',h:true},turquia:{n:'Turquía',h:false},australia:{n:'Australia',h:false},paraguay:{n:'Paraguay',h:false},alemania:{n:'Alemania',h:false},curazao:{n:'Curazao',h:false},noruega:{n:'Noruega',h:false},jordania:{n:'Jordania',h:false},paises_bajos:{n:'Países Bajos',h:false},japon:{n:'Japón',h:false},suecia:{n:'Suecia',h:false},tunez:{n:'Túnez',h:false},belgica:{n:'Bélgica',h:false},iran:{n:'Irán',h:false},nueva_zelanda:{n:'Nueva Zelanda',h:false},egipto:{n:'Egipto',h:false},espana:{n:'España',h:false},uruguay:{n:'Uruguay',h:false},arabia:{n:'Arabia Saudita',h:false},cabo_verde:{n:'Cabo Verde',h:false},francia:{n:'Francia',h:false},senegal:{n:'Senegal',h:false},uzbekistan:{n:'Uzbekistán',h:false},costa_marfil:{n:'Costa de Marfil',h:false},argentina:{n:'Argentina',h:false},argelia:{n:'Argelia',h:false},austria:{n:'Austria',h:false},ecuador:{n:'Ecuador',h:false},portugal:{n:'Portugal',h:false},colombia:{n:'Colombia',h:false},irak:{n:'Irak',h:false},ghana:{n:'Ghana',h:false},inglaterra:{n:'Inglaterra',h:false},croacia:{n:'Croacia',h:false},panama:{n:'Panamá',h:false}};
+const EQUIPOS={mexico:{n:'México',h:true},sudafrica:{n:'Sudáfrica',h:false},corea:{n:'Corea del Sur',h:false},checa:{n:'Rep. Checa',h:false},canada:{n:'Canadá',h:true},bosnia:{n:'Bosnia',h:false},suiza:{n:'Suiza',h:false},qatar:{n:'Qatar',h:false},brasil:{n:'Brasil',h:false},marruecos:{n:'Marruecos',h:false},haiti:{n:'Haití',h:false},escocia:{n:'Escocia',h:false},eeuu:{n:'EE.UU.',h:true},turquia:{n:'Turquía',h:false},australia:{n:'Australia',h:false},paraguay:{n:'Paraguay',h:false},alemania:{n:'Alemania',h:false},curazao:{n:'Curazao',h:false},noruega:{n:'Noruega',h:false},jordania:{n:'Jordania',h:false},paises_bajos:{n:'Países Bajos',h:false},japon:{n:'Japón',h:false},suecia:{n:'Suecia',h:false},tunez:{n:'Túnez',h:false},belgica:{n:'Bélgica',h:false},iran:{n:'Irán',h:false},nueva_zelanda:{n:'Nueva Zelanda',h:false},egipto:{n:'Egipto',h:false},espana:{n:'España',h:false},uruguay:{n:'Uruguay',h:false},arabia:{n:'Arabia Saudita',h:false},cabo_verde:{n:'Cabo Verde',h:false},francia:{n:'Francia',h:false},senegal:{n:'Senegal',h:false},uzbekistan:{n:'Uzbekistán',h:false},costa_marfil:{n:'Costa de Marfil',h:false},argentina:{n:'Argentina',h:false},argelia:{n:'Argelia',h:false},austria:{n:'Austria',h:false},ecuador:{n:'Ecuador',h:false},portugal:{n:'Portugal',h:false},colombia:{n:'Colombia',h:false},irak:{n:'Irak',h:false},ghana:{n:'Ghana',h:false},inglaterra:{n:'Inglaterra',h:false},croacia:{n:'Croacia',h:false},panama:{n:'Panamá',h:false},rdcongo:{n:'RD Congo',h:false}};
 
 // ═══════════════════════════════════════════════════════════════
 // INFORMACIÓN DE PAÍSES — Mundial 2026
@@ -1265,41 +1265,88 @@ const INFO_PAISES = {
   inglaterra:{conf:'UEFA',ranking:4,participaciones:17,mejor:'Campeón (1966)',titulos:1,estrella:'Jude Bellingham',apodo:'Los Three Lions',dato:'Campeón en 1966 en casa. Finalista de la Euro 2020 y 2024.'},
   croacia:{conf:'UEFA',ranking:10,participaciones:7,mejor:'Subcampeón (2018)',titulos:0,estrella:'Luka Modrić',apodo:'Los Vatreni',dato:'Finalista 2018 y tercera en 2022 con una población de 4 millones.'},
   panama:{conf:'CONCACAF',ranking:39,participaciones:2,mejor:'Fase de grupos',titulos:0,estrella:'Adalberto Carrasquilla',apodo:'La Marea Roja',dato:'Segunda participación tras debutar en Rusia 2018.'},
+rdcongo:{conf:'CAF',ranking:60,participaciones:2,mejor:'Primera ronda (1974)',titulos:0,estrella:'Cédric Bakambu',apodo:'Los Leopardos',dato:'Regresa a un Mundial después de más de 50 años.'},
 };
 const CONF_NOMBRES = {
   'CONMEBOL':'Sudamérica','UEFA':'Europa','CONCACAF':'Norte/Centroamérica',
   'CAF':'África','AFC':'Asia','OFC':'Oceanía'
 };
 
-const GRUPOS={A:['mexico','sudafrica','corea','checa'],B:['canada','bosnia','suiza','qatar'],C:['brasil','marruecos','haiti','escocia'],D:['eeuu','turquia','australia','paraguay'],E:['alemania','curazao','noruega','jordania'],F:['paises_bajos','japon','suecia','tunez'],G:['belgica','iran','nueva_zelanda','egipto'],H:['espana','uruguay','arabia','cabo_verde'],I:['francia','senegal','uzbekistan','costa_marfil'],J:['argentina','argelia','austria','ecuador'],K:['portugal','colombia','irak','ghana'],L:['inglaterra','croacia','panama','haiti']};
+const GRUPOS={A:['mexico','sudafrica','corea','checa'],B:['canada','bosnia','qatar','suiza'],C:['brasil','marruecos','haiti','escocia'],D:['eeuu','paraguay','australia','turquia'],E:['alemania','curazao','costa_marfil','ecuador'],F:['paises_bajos','japon','suecia','tunez'],G:['belgica','egipto','iran','nueva_zelanda'],H:['espana','cabo_verde','arabia','uruguay'],I:['francia','senegal','irak','noruega'],J:['argentina','argelia','austria','jordania'],K:['portugal','rdcongo','uzbekistan','colombia'],L:['inglaterra','croacia','ghana','panama']};
 
 const PARTIDOS_INICIAL=[
-  {id:1,g:'A',local:'mexico',visita:'sudafrica',gL:0,gV:0,estado:'upcoming',fecha:'11 Jun',hora:'2:00 PM',sede:'Estadio Azteca · CDMX',goles:[]},
-  {id:2,g:'A',local:'corea',visita:'checa',gL:0,gV:0,estado:'upcoming',fecha:'11 Jun',hora:'9:00 PM',sede:'Estadio Akron · Guadalajara',goles:[]},
-  {id:3,g:'A',local:'sudafrica',visita:'checa',gL:0,gV:0,estado:'upcoming',fecha:'18 Jun',hora:'1:00 PM',sede:'Atlanta',goles:[]},
-  {id:4,g:'A',local:'mexico',visita:'corea',gL:0,gV:0,estado:'upcoming',fecha:'18 Jun',hora:'10:00 PM',sede:'Estadio Akron',goles:[]},
-  {id:5,g:'B',local:'canada',visita:'bosnia',gL:0,gV:0,estado:'upcoming',fecha:'12 Jun',hora:'4:00 PM',sede:'BMO Field · Toronto',goles:[]},
-  {id:6,g:'B',local:'qatar',visita:'suiza',gL:0,gV:0,estado:'upcoming',fecha:'13 Jun',hora:'4:00 PM',sede:"Levi's · SF",goles:[]},
-  {id:7,g:'C',local:'brasil',visita:'marruecos',gL:0,gV:0,estado:'upcoming',fecha:'14 Jun',hora:'8:00 PM',sede:'MetLife · Nueva York',goles:[]},
-  {id:8,g:'C',local:'haiti',visita:'escocia',gL:0,gV:0,estado:'upcoming',fecha:'14 Jun',hora:'2:00 PM',sede:'Lumen · Seattle',goles:[]},
-  {id:9,g:'D',local:'eeuu',visita:'paraguay',gL:0,gV:0,estado:'upcoming',fecha:'12 Jun',hora:'10:00 PM',sede:'SoFi · LA',goles:[]},
-  {id:10,g:'D',local:'australia',visita:'turquia',gL:0,gV:0,estado:'upcoming',fecha:'13 Jun',hora:'1:00 PM',sede:'BC Place · Vancouver',goles:[]},
-  {id:11,g:'E',local:'alemania',visita:'curazao',gL:0,gV:0,estado:'upcoming',fecha:'14 Jun',hora:'2:00 PM',sede:'NRG · Houston',goles:[]},
-  {id:12,g:'E',local:'noruega',visita:'jordania',gL:0,gV:0,estado:'upcoming',fecha:'14 Jun',hora:'8:00 PM',sede:'Lincoln · Filadelfia',goles:[]},
-  {id:13,g:'F',local:'paises_bajos',visita:'japon',gL:0,gV:0,estado:'upcoming',fecha:'14 Jun',hora:'5:00 PM',sede:'AT&T · Dallas',goles:[]},
-  {id:14,g:'F',local:'suecia',visita:'tunez',gL:0,gV:0,estado:'upcoming',fecha:'14 Jun',hora:'11:00 PM',sede:'BBVA · Monterrey',goles:[]},
-  {id:15,g:'G',local:'belgica',visita:'egipto',gL:0,gV:0,estado:'upcoming',fecha:'15 Jun',hora:'4:00 PM',sede:'Lumen · Seattle',goles:[]},
-  {id:16,g:'G',local:'iran',visita:'nueva_zelanda',gL:0,gV:0,estado:'upcoming',fecha:'15 Jun',hora:'10:00 PM',sede:'SoFi · LA',goles:[]},
-  {id:17,g:'H',local:'espana',visita:'cabo_verde',gL:0,gV:0,estado:'upcoming',fecha:'15 Jun',hora:'1:00 PM',sede:'MetLife · Nueva York',goles:[]},
-  {id:18,g:'H',local:'uruguay',visita:'arabia',gL:0,gV:0,estado:'upcoming',fecha:'15 Jun',hora:'7:00 PM',sede:'Hard Rock · Miami',goles:[]},
-  {id:19,g:'I',local:'francia',visita:'senegal',gL:0,gV:0,estado:'upcoming',fecha:'16 Jun',hora:'8:00 PM',sede:'Arrowhead · KC',goles:[]},
-  {id:20,g:'I',local:'uzbekistan',visita:'costa_marfil',gL:0,gV:0,estado:'upcoming',fecha:'16 Jun',hora:'2:00 PM',sede:'Gillette · Boston',goles:[]},
-  {id:21,g:'J',local:'argentina',visita:'argelia',gL:0,gV:0,estado:'upcoming',fecha:'16 Jun',hora:'5:00 PM',sede:'MetLife · Nueva York',goles:[]},
-  {id:22,g:'J',local:'austria',visita:'ecuador',gL:0,gV:0,estado:'upcoming',fecha:'17 Jun',hora:'1:00 PM',sede:'Lincoln · Filadelfia',goles:[]},
-  {id:23,g:'K',local:'portugal',visita:'irak',gL:0,gV:0,estado:'upcoming',fecha:'17 Jun',hora:'4:00 PM',sede:'Gillette · Boston',goles:[]},
-  {id:24,g:'K',local:'colombia',visita:'ghana',gL:0,gV:0,estado:'upcoming',fecha:'17 Jun',hora:'10:00 PM',sede:'AT&T · Dallas',goles:[]},
-  {id:25,g:'L',local:'inglaterra',visita:'panama',gL:0,gV:0,estado:'upcoming',fecha:'17 Jun',hora:'7:00 PM',sede:'Lincoln · Filadelfia',goles:[]},
-  {id:26,g:'L',local:'croacia',visita:'haiti',gL:0,gV:0,estado:'upcoming',fecha:'18 Jun',hora:'1:00 PM',sede:'BMO Field · Toronto',goles:[]},
+  {id:1,g:'A',local:'mexico',visita:'sudafrica',gL:0,gV:0,estado:'upcoming',fecha:'11 Jun',hora:'2:00 PM',sede:'',goles:[]},
+  {id:2,g:'A',local:'corea',visita:'checa',gL:0,gV:0,estado:'upcoming',fecha:'11 Jun',hora:'9:00 PM',sede:'',goles:[]},
+  {id:3,g:'B',local:'canada',visita:'bosnia',gL:0,gV:0,estado:'upcoming',fecha:'12 Jun',hora:'2:00 PM',sede:'',goles:[]},
+  {id:4,g:'D',local:'eeuu',visita:'paraguay',gL:0,gV:0,estado:'upcoming',fecha:'12 Jun',hora:'8:00 PM',sede:'',goles:[]},
+  {id:5,g:'B',local:'qatar',visita:'suiza',gL:0,gV:0,estado:'upcoming',fecha:'13 Jun',hora:'2:00 PM',sede:'',goles:[]},
+  {id:6,g:'C',local:'brasil',visita:'marruecos',gL:0,gV:0,estado:'upcoming',fecha:'13 Jun',hora:'5:00 PM',sede:'',goles:[]},
+  {id:7,g:'C',local:'haiti',visita:'escocia',gL:0,gV:0,estado:'upcoming',fecha:'13 Jun',hora:'8:00 PM',sede:'',goles:[]},
+  {id:8,g:'D',local:'australia',visita:'turquia',gL:0,gV:0,estado:'upcoming',fecha:'13 Jun',hora:'11:00 PM',sede:'',goles:[]},
+  {id:9,g:'E',local:'alemania',visita:'curazao',gL:0,gV:0,estado:'upcoming',fecha:'14 Jun',hora:'12:00 PM',sede:'',goles:[]},
+  {id:10,g:'F',local:'paises_bajos',visita:'japon',gL:0,gV:0,estado:'upcoming',fecha:'14 Jun',hora:'3:00 PM',sede:'',goles:[]},
+  {id:11,g:'E',local:'costa_marfil',visita:'ecuador',gL:0,gV:0,estado:'upcoming',fecha:'14 Jun',hora:'6:00 PM',sede:'',goles:[]},
+  {id:12,g:'F',local:'suecia',visita:'tunez',gL:0,gV:0,estado:'upcoming',fecha:'14 Jun',hora:'9:00 PM',sede:'',goles:[]},
+  {id:13,g:'H',local:'espana',visita:'cabo_verde',gL:0,gV:0,estado:'upcoming',fecha:'15 Jun',hora:'11:00 AM',sede:'',goles:[]},
+  {id:14,g:'G',local:'belgica',visita:'egipto',gL:0,gV:0,estado:'upcoming',fecha:'15 Jun',hora:'2:00 PM',sede:'',goles:[]},
+  {id:15,g:'H',local:'arabia',visita:'uruguay',gL:0,gV:0,estado:'upcoming',fecha:'15 Jun',hora:'5:00 PM',sede:'',goles:[]},
+  {id:16,g:'G',local:'iran',visita:'nueva_zelanda',gL:0,gV:0,estado:'upcoming',fecha:'15 Jun',hora:'8:00 PM',sede:'',goles:[]},
+  {id:17,g:'I',local:'francia',visita:'senegal',gL:0,gV:0,estado:'upcoming',fecha:'16 Jun',hora:'2:00 PM',sede:'',goles:[]},
+  {id:18,g:'I',local:'irak',visita:'noruega',gL:0,gV:0,estado:'upcoming',fecha:'16 Jun',hora:'5:00 PM',sede:'',goles:[]},
+  {id:19,g:'J',local:'argentina',visita:'argelia',gL:0,gV:0,estado:'upcoming',fecha:'16 Jun',hora:'8:00 PM',sede:'',goles:[]},
+  {id:20,g:'J',local:'austria',visita:'jordania',gL:0,gV:0,estado:'upcoming',fecha:'16 Jun',hora:'11:00 PM',sede:'',goles:[]},
+  {id:21,g:'K',local:'portugal',visita:'rdcongo',gL:0,gV:0,estado:'upcoming',fecha:'17 Jun',hora:'12:00 PM',sede:'',goles:[]},
+  {id:22,g:'L',local:'inglaterra',visita:'croacia',gL:0,gV:0,estado:'upcoming',fecha:'17 Jun',hora:'3:00 PM',sede:'',goles:[]},
+  {id:23,g:'L',local:'ghana',visita:'panama',gL:0,gV:0,estado:'upcoming',fecha:'17 Jun',hora:'6:00 PM',sede:'',goles:[]},
+  {id:24,g:'K',local:'uzbekistan',visita:'colombia',gL:0,gV:0,estado:'upcoming',fecha:'17 Jun',hora:'9:00 PM',sede:'',goles:[]},
+  {id:25,g:'A',local:'checa',visita:'sudafrica',gL:0,gV:0,estado:'upcoming',fecha:'18 Jun',hora:'11:00 AM',sede:'',goles:[]},
+  {id:26,g:'B',local:'suiza',visita:'bosnia',gL:0,gV:0,estado:'upcoming',fecha:'18 Jun',hora:'2:00 PM',sede:'',goles:[]},
+  {id:27,g:'B',local:'canada',visita:'qatar',gL:0,gV:0,estado:'upcoming',fecha:'18 Jun',hora:'5:00 PM',sede:'',goles:[]},
+  {id:28,g:'A',local:'mexico',visita:'corea',gL:0,gV:0,estado:'upcoming',fecha:'18 Jun',hora:'8:00 PM',sede:'',goles:[]},
+  {id:29,g:'D',local:'eeuu',visita:'australia',gL:0,gV:0,estado:'upcoming',fecha:'19 Jun',hora:'2:00 PM',sede:'',goles:[]},
+  {id:30,g:'C',local:'escocia',visita:'marruecos',gL:0,gV:0,estado:'upcoming',fecha:'19 Jun',hora:'5:00 PM',sede:'',goles:[]},
+  {id:31,g:'C',local:'brasil',visita:'haiti',gL:0,gV:0,estado:'upcoming',fecha:'19 Jun',hora:'7:30 PM',sede:'',goles:[]},
+  {id:32,g:'D',local:'turquia',visita:'paraguay',gL:0,gV:0,estado:'upcoming',fecha:'19 Jun',hora:'10:00 PM',sede:'',goles:[]},
+  {id:33,g:'F',local:'paises_bajos',visita:'suecia',gL:0,gV:0,estado:'upcoming',fecha:'20 Jun',hora:'12:00 PM',sede:'',goles:[]},
+  {id:34,g:'E',local:'alemania',visita:'costa_marfil',gL:0,gV:0,estado:'upcoming',fecha:'20 Jun',hora:'3:00 PM',sede:'',goles:[]},
+  {id:35,g:'E',local:'ecuador',visita:'curazao',gL:0,gV:0,estado:'upcoming',fecha:'20 Jun',hora:'7:00 PM',sede:'',goles:[]},
+  {id:36,g:'F',local:'tunez',visita:'japon',gL:0,gV:0,estado:'upcoming',fecha:'20 Jun',hora:'11:00 PM',sede:'',goles:[]},
+  {id:37,g:'H',local:'espana',visita:'arabia',gL:0,gV:0,estado:'upcoming',fecha:'21 Jun',hora:'11:00 AM',sede:'',goles:[]},
+  {id:38,g:'G',local:'belgica',visita:'iran',gL:0,gV:0,estado:'upcoming',fecha:'21 Jun',hora:'2:00 PM',sede:'',goles:[]},
+  {id:39,g:'H',local:'uruguay',visita:'cabo_verde',gL:0,gV:0,estado:'upcoming',fecha:'21 Jun',hora:'5:00 PM',sede:'',goles:[]},
+  {id:40,g:'G',local:'nueva_zelanda',visita:'egipto',gL:0,gV:0,estado:'upcoming',fecha:'21 Jun',hora:'8:00 PM',sede:'',goles:[]},
+  {id:41,g:'J',local:'argentina',visita:'austria',gL:0,gV:0,estado:'upcoming',fecha:'22 Jun',hora:'12:00 PM',sede:'',goles:[]},
+  {id:42,g:'I',local:'francia',visita:'irak',gL:0,gV:0,estado:'upcoming',fecha:'22 Jun',hora:'4:00 PM',sede:'',goles:[]},
+  {id:43,g:'I',local:'noruega',visita:'senegal',gL:0,gV:0,estado:'upcoming',fecha:'22 Jun',hora:'7:00 PM',sede:'',goles:[]},
+  {id:44,g:'J',local:'jordania',visita:'argelia',gL:0,gV:0,estado:'upcoming',fecha:'22 Jun',hora:'10:00 PM',sede:'',goles:[]},
+  {id:45,g:'K',local:'portugal',visita:'uzbekistan',gL:0,gV:0,estado:'upcoming',fecha:'23 Jun',hora:'12:00 PM',sede:'',goles:[]},
+  {id:46,g:'L',local:'inglaterra',visita:'ghana',gL:0,gV:0,estado:'upcoming',fecha:'23 Jun',hora:'3:00 PM',sede:'',goles:[]},
+  {id:47,g:'L',local:'panama',visita:'croacia',gL:0,gV:0,estado:'upcoming',fecha:'23 Jun',hora:'6:00 PM',sede:'',goles:[]},
+  {id:48,g:'K',local:'colombia',visita:'rdcongo',gL:0,gV:0,estado:'upcoming',fecha:'23 Jun',hora:'9:00 PM',sede:'',goles:[]},
+  {id:49,g:'B',local:'suiza',visita:'canada',gL:0,gV:0,estado:'upcoming',fecha:'24 Jun',hora:'2:00 PM',sede:'',goles:[]},
+  {id:50,g:'B',local:'bosnia',visita:'qatar',gL:0,gV:0,estado:'upcoming',fecha:'24 Jun',hora:'2:00 PM',sede:'',goles:[]},
+  {id:51,g:'C',local:'marruecos',visita:'haiti',gL:0,gV:0,estado:'upcoming',fecha:'24 Jun',hora:'5:00 PM',sede:'',goles:[]},
+  {id:52,g:'C',local:'escocia',visita:'brasil',gL:0,gV:0,estado:'upcoming',fecha:'24 Jun',hora:'5:00 PM',sede:'',goles:[]},
+  {id:53,g:'A',local:'sudafrica',visita:'corea',gL:0,gV:0,estado:'upcoming',fecha:'24 Jun',hora:'8:00 PM',sede:'',goles:[]},
+  {id:54,g:'A',local:'checa',visita:'mexico',gL:0,gV:0,estado:'upcoming',fecha:'24 Jun',hora:'8:00 PM',sede:'',goles:[]},
+  {id:55,g:'E',local:'curazao',visita:'costa_marfil',gL:0,gV:0,estado:'upcoming',fecha:'25 Jun',hora:'3:00 PM',sede:'',goles:[]},
+  {id:56,g:'E',local:'ecuador',visita:'alemania',gL:0,gV:0,estado:'upcoming',fecha:'25 Jun',hora:'3:00 PM',sede:'',goles:[]},
+  {id:57,g:'F',local:'tunez',visita:'paises_bajos',gL:0,gV:0,estado:'upcoming',fecha:'25 Jun',hora:'6:00 PM',sede:'',goles:[]},
+  {id:58,g:'F',local:'japon',visita:'suecia',gL:0,gV:0,estado:'upcoming',fecha:'25 Jun',hora:'6:00 PM',sede:'',goles:[]},
+  {id:59,g:'D',local:'turquia',visita:'eeuu',gL:0,gV:0,estado:'upcoming',fecha:'25 Jun',hora:'9:00 PM',sede:'',goles:[]},
+  {id:60,g:'D',local:'paraguay',visita:'australia',gL:0,gV:0,estado:'upcoming',fecha:'25 Jun',hora:'9:00 PM',sede:'',goles:[]},
+  {id:61,g:'I',local:'noruega',visita:'francia',gL:0,gV:0,estado:'upcoming',fecha:'26 Jun',hora:'2:00 PM',sede:'',goles:[]},
+  {id:62,g:'I',local:'senegal',visita:'irak',gL:0,gV:0,estado:'upcoming',fecha:'26 Jun',hora:'2:00 PM',sede:'',goles:[]},
+  {id:63,g:'H',local:'cabo_verde',visita:'arabia',gL:0,gV:0,estado:'upcoming',fecha:'26 Jun',hora:'7:00 PM',sede:'',goles:[]},
+  {id:64,g:'H',local:'uruguay',visita:'espana',gL:0,gV:0,estado:'upcoming',fecha:'26 Jun',hora:'7:00 PM',sede:'',goles:[]},
+  {id:65,g:'G',local:'nueva_zelanda',visita:'belgica',gL:0,gV:0,estado:'upcoming',fecha:'26 Jun',hora:'10:00 PM',sede:'',goles:[]},
+  {id:66,g:'G',local:'egipto',visita:'iran',gL:0,gV:0,estado:'upcoming',fecha:'26 Jun',hora:'10:00 PM',sede:'',goles:[]},
+  {id:67,g:'L',local:'panama',visita:'inglaterra',gL:0,gV:0,estado:'upcoming',fecha:'27 Jun',hora:'4:00 PM',sede:'',goles:[]},
+  {id:68,g:'L',local:'croacia',visita:'ghana',gL:0,gV:0,estado:'upcoming',fecha:'27 Jun',hora:'4:00 PM',sede:'',goles:[]},
+  {id:69,g:'K',local:'colombia',visita:'portugal',gL:0,gV:0,estado:'upcoming',fecha:'27 Jun',hora:'6:30 PM',sede:'',goles:[]},
+  {id:70,g:'K',local:'rdcongo',visita:'uzbekistan',gL:0,gV:0,estado:'upcoming',fecha:'27 Jun',hora:'6:30 PM',sede:'',goles:[]},
+  {id:71,g:'J',local:'argelia',visita:'austria',gL:0,gV:0,estado:'upcoming',fecha:'27 Jun',hora:'9:00 PM',sede:'',goles:[]},
+  {id:72,g:'J',local:'jordania',visita:'argentina',gL:0,gV:0,estado:'upcoming',fecha:'27 Jun',hora:'9:00 PM',sede:'',goles:[]}
 ];
 
 const AVATARES=['😎','🤩','🏆','⚽','🔥','👑','💪','🎯','🦁','🐯','🦊','🤠','😏','🧠','🫡','⭐'];
@@ -2806,10 +2853,10 @@ function cerrarPolla(){
 
 
 // ════════════════ DATOS ════════════════
-const PLL_FLAGS={mexico:'mx',sudafrica:'za',corea:'kr',checa:'cz',canada:'ca',bosnia:'ba',suiza:'ch',qatar:'qa',brasil:'br',marruecos:'ma',haiti:'ht',escocia:'gb-sct',eeuu:'us',turquia:'tr',australia:'au',paraguay:'py',alemania:'de',curazao:'cw',noruega:'no',jordania:'jo',paises_bajos:'nl',japon:'jp',suecia:'se',tunez:'tn',belgica:'be',iran:'ir',nueva_zelanda:'nz',egipto:'eg',espana:'es',uruguay:'uy',arabia:'sa',cabo_verde:'cv',francia:'fr',senegal:'sn',uzbekistan:'uz',costa_marfil:'ci',argentina:'ar',argelia:'dz',austria:'at',ecuador:'ec',portugal:'pt',colombia:'co',irak:'iq',ghana:'gh',inglaterra:'gb-eng',croacia:'hr',panama:'pa'};
+const PLL_FLAGS={mexico:'mx',sudafrica:'za',corea:'kr',checa:'cz',canada:'ca',bosnia:'ba',suiza:'ch',qatar:'qa',brasil:'br',marruecos:'ma',haiti:'ht',escocia:'gb-sct',eeuu:'us',turquia:'tr',australia:'au',paraguay:'py',alemania:'de',curazao:'cw',noruega:'no',jordania:'jo',paises_bajos:'nl',japon:'jp',suecia:'se',tunez:'tn',belgica:'be',iran:'ir',nueva_zelanda:'nz',egipto:'eg',espana:'es',uruguay:'uy',arabia:'sa',cabo_verde:'cv',francia:'fr',senegal:'sn',uzbekistan:'uz',costa_marfil:'ci',argentina:'ar',argelia:'dz',austria:'at',ecuador:'ec',portugal:'pt',colombia:'co',irak:'iq',ghana:'gh',inglaterra:'gb-eng',croacia:'hr',panama:'pa',rdcongo:'cd'};
 const pllFUrl=(k,w=80)=>`https://flagcdn.com/w${w}/${PLL_FLAGS[k]||'un'}.png`;
-const PLL_EQUIPOS={mexico:'México',sudafrica:'Sudáfrica',corea:'Corea del Sur',checa:'Rep. Checa',canada:'Canadá',bosnia:'Bosnia',suiza:'Suiza',qatar:'Qatar',brasil:'Brasil',marruecos:'Marruecos',haiti:'Haití',escocia:'Escocia',eeuu:'EE.UU.',turquia:'Turquía',australia:'Australia',paraguay:'Paraguay',alemania:'Alemania',curazao:'Curazao',noruega:'Noruega',jordania:'Jordania',paises_bajos:'Países Bajos',japon:'Japón',suecia:'Suecia',tunez:'Túnez',belgica:'Bélgica',iran:'Irán',nueva_zelanda:'Nueva Zelanda',egipto:'Egipto',espana:'España',uruguay:'Uruguay',arabia:'Arabia Saudita',cabo_verde:'Cabo Verde',francia:'Francia',senegal:'Senegal',uzbekistan:'Uzbekistán',costa_marfil:'Costa de Marfil',argentina:'Argentina',argelia:'Argelia',austria:'Austria',ecuador:'Ecuador',portugal:'Portugal',colombia:'Colombia',irak:'Irak',ghana:'Ghana',inglaterra:'Inglaterra',croacia:'Croacia',panama:'Panamá'};
-const PLL_GRUPOS={A:['mexico','sudafrica','corea','checa'],B:['canada','bosnia','suiza','qatar'],C:['brasil','marruecos','haiti','escocia'],D:['eeuu','turquia','australia','paraguay'],E:['alemania','curazao','noruega','jordania'],F:['paises_bajos','japon','suecia','tunez'],G:['belgica','iran','nueva_zelanda','egipto'],H:['espana','uruguay','arabia','cabo_verde'],I:['francia','senegal','uzbekistan','costa_marfil'],J:['argentina','argelia','austria','ecuador'],K:['portugal','colombia','irak','ghana'],L:['inglaterra','croacia','panama','haiti']};
+const PLL_EQUIPOS={mexico:'México',sudafrica:'Sudáfrica',corea:'Corea del Sur',checa:'Rep. Checa',canada:'Canadá',bosnia:'Bosnia',suiza:'Suiza',qatar:'Qatar',brasil:'Brasil',marruecos:'Marruecos',haiti:'Haití',escocia:'Escocia',eeuu:'EE.UU.',turquia:'Turquía',australia:'Australia',paraguay:'Paraguay',alemania:'Alemania',curazao:'Curazao',noruega:'Noruega',jordania:'Jordania',paises_bajos:'Países Bajos',japon:'Japón',suecia:'Suecia',tunez:'Túnez',belgica:'Bélgica',iran:'Irán',nueva_zelanda:'Nueva Zelanda',egipto:'Egipto',espana:'España',uruguay:'Uruguay',arabia:'Arabia Saudita',cabo_verde:'Cabo Verde',francia:'Francia',senegal:'Senegal',uzbekistan:'Uzbekistán',costa_marfil:'Costa de Marfil',argentina:'Argentina',argelia:'Argelia',austria:'Austria',ecuador:'Ecuador',portugal:'Portugal',colombia:'Colombia',irak:'Irak',ghana:'Ghana',inglaterra:'Inglaterra',croacia:'Croacia',panama:'Panamá',rdcongo:'RD Congo'};
+const PLL_GRUPOS={A:['mexico','sudafrica','corea','checa'],B:['canada','bosnia','qatar','suiza'],C:['brasil','marruecos','haiti','escocia'],D:['eeuu','paraguay','australia','turquia'],E:['alemania','curazao','costa_marfil','ecuador'],F:['paises_bajos','japon','suecia','tunez'],G:['belgica','egipto','iran','nueva_zelanda'],H:['espana','cabo_verde','arabia','uruguay'],I:['francia','senegal','irak','noruega'],J:['argentina','argelia','austria','jordania'],K:['portugal','rdcongo','uzbekistan','colombia'],L:['inglaterra','croacia','ghana','panama']};
 
 // Configuración de la polla (el admin puede cambiarla; se guarda en Firebase)
 let PLL_TOPE_TOTAL=32;   // cuántos equipos en total debe seleccionar/acertar
