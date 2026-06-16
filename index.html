@@ -1154,7 +1154,7 @@ const FB_OK = true;
 // ════ VERSIÓN DE LA APP ════
 // Sube este número cada vez que publiques una nueva versión en GitHub.
 // La app compara con la versión guardada en Firebase; si está vieja, obliga a recargar.
-const APP_VERSION = 14;
+const APP_VERSION = 15;
 console.log('🔥 Firebase conectado:', firebaseConfig.projectId);
 
 // ════ CONTROL DE VERSIÓN ════
@@ -1989,6 +1989,9 @@ const API_TEAM_MAP = {
   'Portugal':'portugal','Colombia':'colombia','Iraq':'irak',
   'Ghana':'ghana','England':'inglaterra','Croatia':'croacia',
   'Panama':'panama',
+  'DR Congo':'rdcongo','Congo DR':'rdcongo','Democratic Republic of Congo':'rdcongo','Congo':'rdcongo','DR-Congo':'rdcongo',
+  'Korea Republic':'corea','Republic of Korea':'corea','Czechia':'checa',
+  'Türkiye':'turquia','Turkiye':'turquia','Cabo Verde':'cabo_verde',
 };
 
 function guardarApiKey(){
@@ -2151,18 +2154,31 @@ async function sincronizarAhora(){
 async function sincronizarPartidosGrupos(){
   // Traer todos los fixtures de fase de grupos
   const data = await llamarAPI(`/fixtures?league=${WC_LEAGUE}&season=${WC_SEASON}&round=Group+Stage`);
-  if(!data.response) return;
+  if(!data.response){ console.warn('⚠️ API: respuesta sin fixtures', data); return 0; }
+  console.log('📡 API devolvió', data.response.length, 'partidos de fase de grupos');
   let cambios = false;
+  let actualizados = 0;
   data.response.forEach(fix => {
     const hName = fix.teams.home.name;
     const aName = fix.teams.away.name;
     const hKey  = API_TEAM_MAP[hName];
     const aKey  = API_TEAM_MAP[aName];
-    if(!hKey || !aKey) return;
-    const p = partidos.find(x => x.local===hKey && x.visita===aKey);
+    if(!hKey || !aKey){
+      // Avisar en consola qué nombre no se reconoció (para diagnóstico)
+      if(!hKey) console.warn('⚠️ API: equipo no reconocido (local):', hName);
+      if(!aKey) console.warn('⚠️ API: equipo no reconocido (visita):', aName);
+      return;
+    }
+    // Buscar el partido sin importar el orden local/visita
+    let invertido = false;
+    let p = partidos.find(x => x.local===hKey && x.visita===aKey);
+    if(!p){ p = partidos.find(x => x.local===aKey && x.visita===hKey); invertido = !!p; }
     if(!p) return;
-    const gL = fix.goals.home ?? 0;
-    const gV = fix.goals.away ?? 0;
+    // Los goles se asignan según el orden REAL de nuestro partido
+    const gLapi = fix.goals.home ?? 0;
+    const gVapi = fix.goals.away ?? 0;
+    const gL = invertido ? gVapi : gLapi;
+    const gV = invertido ? gLapi : gVapi;
     const status = fix.fixture.status.short; // NS, 1H, HT, 2H, FT, etc
     let nuevoEstado = p.estado;
     if(['1H','2H','ET','BT','P'].includes(status)) nuevoEstado = 'live';
@@ -2188,25 +2204,31 @@ async function sincronizarPartidosGrupos(){
         revisarPollas(p.id);
       }
       cambios = true;
+      actualizados++;
     }
   });
   // También traer partidos en vivo ahora mismo
-  const live = await llamarAPI(`/fixtures?live=${WC_LEAGUE}`).catch(()=>({response:[]}));
+  const live = await llamarAPI(`/fixtures?live=all`).catch(()=>({response:[]}));
   if(live.response){
     live.response.forEach(fix => {
       const hKey = API_TEAM_MAP[fix.teams.home.name];
       const aKey = API_TEAM_MAP[fix.teams.away.name];
       if(!hKey||!aKey) return;
-      const p = partidos.find(x=>x.local===hKey&&x.visita===aKey);
+      let invertido = false;
+      let p = partidos.find(x=>x.local===hKey&&x.visita===aKey);
+      if(!p){ p = partidos.find(x=>x.local===aKey&&x.visita===hKey); invertido = !!p; }
       if(!p) return;
-      p.gL = fix.goals.home??0;
-      p.gV = fix.goals.away??0;
+      const gh = fix.goals.home??0, ga = fix.goals.away??0;
+      p.gL = invertido ? ga : gh;
+      p.gV = invertido ? gh : ga;
       p.estado = 'live';
       p.actualizadoPorAPI = true;
       cambios = true;
     });
   }
   if(cambios) totalGoles = partidos.reduce((s,p)=>s+p.gL+p.gV,0);
+  console.log('✅ API: se actualizaron', actualizados, 'partidos de grupos');
+  return actualizados;
 }
 
 async function sincronizarPartidosKO(){
