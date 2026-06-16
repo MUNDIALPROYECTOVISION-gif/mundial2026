@@ -1154,7 +1154,7 @@ const FB_OK = true;
 // ════ VERSIÓN DE LA APP ════
 // Sube este número cada vez que publiques una nueva versión en GitHub.
 // La app compara con la versión guardada en Firebase; si está vieja, obliga a recargar.
-const APP_VERSION = 17;
+const APP_VERSION = 18;
 console.log('🔥 Firebase conectado:', firebaseConfig.projectId);
 
 // ════ CONTROL DE VERSIÓN ════
@@ -4660,7 +4660,7 @@ function ofCargarExcel(event){
 
       <div class="oficina-info" id="pll_oficinaInfo"></div>
 
-      <div id="pll_zonaCedula" style="display:none">
+      <div id="pll_zonaCedula">
         <label class="ingreso-label" style="margin-top:20px">2️⃣ ESCRIBE TU CÉDULA</label>
         <input class="ingreso-input" id="pll_inputCedula" type="tel" inputmode="numeric" placeholder="Ej: 1117XXXXXX" maxlength="15">
         <button class="btn-grande" onclick="pllIngresar()">INGRESAR ➜</button>
