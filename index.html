@@ -1154,7 +1154,7 @@ const FB_OK = true;
 // ════ VERSIÓN DE LA APP ════
 // Sube este número cada vez que publiques una nueva versión en GitHub.
 // La app compara con la versión guardada en Firebase; si está vieja, obliga a recargar.
-const APP_VERSION = 15;
+const APP_VERSION = 16;
 console.log('🔥 Firebase conectado:', firebaseConfig.projectId);
 
 // ════ CONTROL DE VERSIÓN ════
@@ -3967,6 +3967,35 @@ async function admBorrarUsuariosPrueba(){
   msg.innerHTML=`✅ ${borrados} usuarios de prueba borrados.`;
   admRenderClientes();
 }
+// ════ Recargar partidos oficiales (sobrescribe los viejos de Firebase) ════
+async function admRecargarPartidosOficiales(){
+  const msg = document.getElementById('admRecargarPartidosMsg');
+  if(!confirm('¿Recargar los 72 partidos oficiales?\n\nEsto reemplaza los marcadores actuales por los oficiales en 0-0.\nLas predicciones de los clientes NO se tocan.\n\n¿Continuar?')) return;
+  msg.className='adm-msg ok'; msg.textContent='⏳ Recargando partidos oficiales...';
+  try{
+    // Resetear los partidos a los oficiales del código (PARTIDOS_INICIAL)
+    partidos = JSON.parse(JSON.stringify(PARTIDOS_INICIAL));
+    // Resetear también la fase eliminatoria (depende de los grupos)
+    if(typeof poblarR32==='function'){ try{ koPartidos = {}; poblarR32(); }catch(e){ koPartidos = koPartidos||{}; } }
+    totalGoles = 0;
+    // Guardar en Firebase (sobrescribe los viejos)
+    await db.collection('partidos').doc('estado').set({
+      partidos: partidos,
+      koPartidos: koPartidos,
+      totalGoles: totalGoles,
+      actualizado: new Date().toISOString()
+    });
+    // Guardar local y re-renderizar
+    guardarDatos();
+    renderizarTodo();
+    msg.className='adm-msg ok';
+    msg.innerHTML='✅ ¡Listo! Se cargaron los 72 partidos oficiales con los grupos correctos. Todos los dispositivos los recibirán en unos segundos.';
+  }catch(e){
+    msg.className='adm-msg error'; msg.textContent='❌ Error al recargar. Revisa tu conexión.';
+    console.error(e);
+  }
+}
+
 // ════ Control de versión (admin) ════
 async function admCargarVersionUI(){
   document.getElementById('admVersionLocal').textContent = APP_VERSION;
@@ -5000,6 +5029,16 @@ function ofCargarExcel(event){
         <button class="adm-btn" onclick="admGuardarVersion()">🔄 Exigir esta versión a todos</button>
         <div class="adm-msg" id="admVersionMsg"></div>
         <div style="font-size:12px;color:var(--gris);margin-top:10px;line-height:1.5">💡 <strong>Importante:</strong> Primero sube el nuevo <code>index.html</code> a GitHub (con su número de versión más alto), espera 2 minutos, y SOLO ENTONCES exige esa versión aquí. Si exiges una versión que aún no subiste, ¡hasta tú quedarás bloqueado!</div>
+      </div>
+
+      <div class="adm-card" style="border:2px solid rgba(255,165,0,.4)">
+        <h3 style="color:#FFA500">⚽ Recargar partidos oficiales</h3>
+        <p>Si ves partidos con equipos en grupos equivocados (ej: Noruega vs Jordania en Grupo E), es porque quedaron partidos viejos guardados. Este botón borra los partidos guardados y carga los <strong>72 partidos oficiales correctos</strong>.</p>
+        <div style="background:rgba(0,200,83,.05);border:1px solid rgba(0,200,83,.2);border-radius:10px;padding:10px;margin-bottom:12px;font-size:13px;color:var(--gris)">
+          ⚠️ Esto reemplaza los <strong>marcadores</strong> por los oficiales en 0-0. <strong>NO toca las predicciones de los clientes</strong> (esas están a salvo). Si ya marcaste algunos resultados a mano, tendrás que volver a marcarlos.
+        </div>
+        <button class="adm-btn" style="background:linear-gradient(135deg,#FFA500,#CC8400)" onclick="admRecargarPartidosOficiales()">⚽ Recargar los 72 partidos oficiales</button>
+        <div class="adm-msg" id="admRecargarPartidosMsg"></div>
       </div>
     </div>
 
