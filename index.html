@@ -1154,7 +1154,7 @@ const FB_OK = true;
 // ════ VERSIÓN DE LA APP ════
 // Sube este número cada vez que publiques una nueva versión en GitHub.
 // La app compara con la versión guardada en Firebase; si está vieja, obliga a recargar.
-const APP_VERSION = 19;
+const APP_VERSION = 20;
 console.log('🔥 Firebase conectado:', firebaseConfig.projectId);
 
 // ════ CONTROL DE VERSIÓN ════
@@ -1992,6 +1992,7 @@ const API_TEAM_MAP = {
   'DR Congo':'rdcongo','Congo DR':'rdcongo','Democratic Republic of Congo':'rdcongo','Congo':'rdcongo','DR-Congo':'rdcongo',
   'Korea Republic':'corea','Republic of Korea':'corea','Czechia':'checa',
   'Türkiye':'turquia','Turkiye':'turquia','Cabo Verde':'cabo_verde',
+  'Czech Republic':'checa','Korea DPR':'corea','IR Iran':'iran',
 };
 
 function guardarApiKey(){
@@ -2167,6 +2168,90 @@ async function sincronizarAhora(){
     mostrarApiBadge('error','❌ Error al actualizar');
     console.error('Sync error:', e);
     toast('❌ No se pudo actualizar — revisa tu conexión','warn');
+  }
+}
+
+// ════════════════════════════════════════════════════════════════
+// SINCRONIZACIÓN GRATIS desde openfootball (sin API key, sin límites)
+// Archivo público que se actualiza ~1 vez al día.
+// ════════════════════════════════════════════════════════════════
+const OPENFOOTBALL_URL = 'https://raw.githubusercontent.com/openfootball/worldcup.json/master/2026/worldcup.json';
+
+async function sincronizarGratis(){
+  const luz = document.getElementById('apiEstadoLuz');
+  if(luz){ luz.className = 'api-estado-luz sincronizando'; }
+  const lt = document.getElementById('luzTexto'); if(lt) lt.textContent = 'Actualizando...';
+  mostrarApiBadge('syncing','🔄 Trayendo resultados...');
+  try{
+    // Agregar un parámetro de tiempo para evitar caché viejo
+    const resp = await fetch(OPENFOOTBALL_URL + '?t=' + Date.now());
+    if(!resp.ok) throw new Error('HTTP ' + resp.status);
+    const data = await resp.json();
+    if(!data.matches){ throw new Error('Sin partidos en el archivo'); }
+    console.log('📡 openfootball devolvió', data.matches.length, 'partidos');
+
+    let actualizados = 0, conMarcador = 0;
+    data.matches.forEach(m => {
+      // Solo partidos de fase de grupos (tienen "group")
+      if(!m.group) return;
+      const hKey = API_TEAM_MAP[m.team1];
+      const aKey = API_TEAM_MAP[m.team2];
+      if(!hKey || !aKey){
+        if(m.team1 && !hKey && !m.team1.includes('winner') && !m.team1.includes('Path')) console.warn('⚠️ Equipo no reconocido:', m.team1);
+        if(m.team2 && !aKey && !m.team2.includes('winner') && !m.team2.includes('Path')) console.warn('⚠️ Equipo no reconocido:', m.team2);
+        return;
+      }
+      // Buscar el partido en nuestra app (sin importar orden local/visita)
+      let invertido = false;
+      let p = partidos.find(x => x.local===hKey && x.visita===aKey);
+      if(!p){ p = partidos.find(x => x.local===aKey && x.visita===hKey); invertido = !!p; }
+      if(!p) return;
+
+      // ¿Tiene marcador? (score.ft = [golesLocal, golesVisita])
+      if(m.score && Array.isArray(m.score.ft) && m.score.ft.length===2){
+        conMarcador++;
+        const g1 = m.score.ft[0], g2 = m.score.ft[1];
+        const gL = invertido ? g2 : g1;
+        const gV = invertido ? g1 : g2;
+        const prevEstado = p.estado;
+        if(p.gL !== gL || p.gV !== gV || p.estado !== 'finished'){
+          p.gL = gL; p.gV = gV; p.estado = 'finished'; p.actualizadoPorAPI = true;
+          if(prevEstado !== 'finished'){ revisarPollas(p.id); }
+          actualizados++;
+        }
+      }
+    });
+
+    totalGoles = partidos.reduce((s,p)=>s+(p.gL||0)+(p.gV||0),0);
+    console.log('✅ openfootball: partidos con marcador:', conMarcador, '| actualizados:', actualizados);
+
+    ultimaSync = new Date();
+    const hora = ultimaSync.toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'});
+    apiEstadoActual.conectado = true;
+    apiEstadoActual.error = false;
+    apiEstadoActual.ultimaSync = hora;
+    apiEstadoActual.plan = 'Gratis (openfootball)';
+    apiEstadoActual.peticiones = 'Sin límite';
+    pintarPanelAPI();
+
+    if(conMarcador===0){
+      mostrarApiBadge('ok',`⏳ Aún sin resultados publicados`);
+      toast('⏳ El archivo gratuito aún no tiene marcadores. Se actualiza ~1 vez al día.','warn');
+    } else {
+      mostrarApiBadge('ok',`✅ ${actualizados} actualizados · ${hora}`);
+      toast(`✅ Resultados traídos (${conMarcador} partidos con marcador)`);
+    }
+    guardarDatos();
+    guardarPartidosFB();
+    renderizarTodo();
+    verificarClasificacion();
+    revisarPollas();
+  }catch(e){
+    apiEstadoActual.error = true;
+    pintarPanelAPI();
+    mostrarApiBadge('error','❌ Error al traer resultados');
+    console.error('Error sincronizando gratis:', e);
+    toast('❌ No se pudo traer resultados — revisa tu conexión','warn');
   }
 }
 
@@ -4111,6 +4196,51 @@ cargarPolla();
 // Activar la escucha de marcadores en tiempo real (todos los dispositivos)
 escucharPartidosFB();
 
+// ════ Sincronización automática GRATIS (openfootball) ════
+// Trae resultados al abrir y luego cada 2 horas. Solo el admin guarda en Firebase;
+// los demás reciben los marcadores por el listener de Firebase.
+async function autoSyncGratisSilencioso(){
+  try{
+    const resp = await fetch(OPENFOOTBALL_URL + '?t=' + Date.now());
+    if(!resp.ok) return;
+    const data = await resp.json();
+    if(!data.matches) return;
+    let actualizados = 0;
+    data.matches.forEach(m => {
+      if(!m.group) return;
+      const hKey = API_TEAM_MAP[m.team1];
+      const aKey = API_TEAM_MAP[m.team2];
+      if(!hKey || !aKey) return;
+      let invertido = false;
+      let p = partidos.find(x => x.local===hKey && x.visita===aKey);
+      if(!p){ p = partidos.find(x => x.local===aKey && x.visita===hKey); invertido = !!p; }
+      if(!p) return;
+      if(m.score && Array.isArray(m.score.ft) && m.score.ft.length===2){
+        const g1 = m.score.ft[0], g2 = m.score.ft[1];
+        const gL = invertido ? g2 : g1;
+        const gV = invertido ? g1 : g2;
+        const prevEstado = p.estado;
+        if(p.gL !== gL || p.gV !== gV || p.estado !== 'finished'){
+          p.gL = gL; p.gV = gV; p.estado = 'finished'; p.actualizadoPorAPI = true;
+          if(prevEstado !== 'finished'){ revisarPollas(p.id); }
+          actualizados++;
+        }
+      }
+    });
+    if(actualizados>0){
+      totalGoles = partidos.reduce((s,p)=>s+(p.gL||0)+(p.gV||0),0);
+      console.log('🔄 Auto-sync gratis: ' + actualizados + ' partidos actualizados');
+      guardarDatos();
+      if(esAdminMode()) guardarPartidosFB(); // Solo el admin escribe a Firebase
+      renderizarTodo();
+      verificarClasificacion();
+    }
+  }catch(e){ /* silencioso, sin molestar */ }
+}
+// Ejecutar al cargar (después de un momento) y cada 2 horas
+setTimeout(autoSyncGratisSilencioso, 4000);
+setInterval(autoSyncGratisSilencioso, 2*60*60*1000);
+
 
 // ════════════════════════════════════════════════════════════════
 // POLLA ENTRE AMIGOS (local, guardada solo en este dispositivo)
@@ -4962,9 +5092,16 @@ function ofCargarExcel(event){
 
     <!-- MARCADORES API -->
     <div class="adm-seccion" id="admSec-api">
+      <div class="adm-card" style="border:2px solid rgba(0,200,83,.5);background:rgba(0,200,83,.05)">
+        <h3 style="color:var(--verde)">⚽ Resultados automáticos GRATIS</h3>
+        <p>Trae los resultados reales del Mundial automáticamente, <strong>sin pagar nada</strong>. Usa una base de datos pública y gratuita. Se actualiza aproximadamente <strong>una vez al día</strong>, así que algunos resultados recién jugados pueden tardar unas horas en aparecer.</p>
+        <button class="adm-btn" style="background:linear-gradient(135deg,#00C853,#009624);font-size:16px;padding:15px" onclick="sincronizarGratis()">⚽ Traer resultados ahora (gratis)</button>
+        <div style="font-size:12px;color:var(--gris);margin-top:10px;line-height:1.5">💡 Si un partido recién terminó y aún no aparece aquí, puedes marcarlo a mano en la página <strong>⚽ Partidos</strong> mientras tanto.</div>
+      </div>
+
       <div class="adm-card">
         <h3>📡 Marcadores Automáticos (API-Football)</h3>
-        <p>Pega aquí tu API Key de <strong>dashboard.api-football.com</strong>. Con esto los goles de los partidos se actualizan solos. Los clientes solo ven los marcadores, no esta configuración.</p>
+        <p style="font-size:13px;color:var(--gris)">⚙️ <strong>Opción avanzada (opcional).</strong> Si tienes una cuenta de pago de API-Football, pega tu API Key aquí para resultados más inmediatos. Si no, usa el botón verde de arriba (gratis).</p>
       </div>
       <!-- PANEL DE ESTADO API (solo admin) -->
       <div class="api-panel" id="apiPanel">
