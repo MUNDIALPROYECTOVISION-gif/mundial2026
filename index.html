@@ -1154,7 +1154,7 @@ const FB_OK = true;
 // ════ VERSIÓN DE LA APP ════
 // Sube este número cada vez que publiques una nueva versión en GitHub.
 // La app compara con la versión guardada en Firebase; si está vieja, obliga a recargar.
-const APP_VERSION = 16;
+const APP_VERSION = 17;
 console.log('🔥 Firebase conectado:', firebaseConfig.projectId);
 
 // ════ CONTROL DE VERSIÓN ════
@@ -2152,10 +2152,15 @@ async function sincronizarAhora(){
 }
 
 async function sincronizarPartidosGrupos(){
-  // Traer todos los fixtures de fase de grupos
-  const data = await llamarAPI(`/fixtures?league=${WC_LEAGUE}&season=${WC_SEASON}&round=Group+Stage`);
+  // Traer TODOS los fixtures del Mundial (sin filtro de ronda, que puede fallar)
+  const data = await llamarAPI(`/fixtures?league=${WC_LEAGUE}&season=${WC_SEASON}`);
   if(!data.response){ console.warn('⚠️ API: respuesta sin fixtures', data); return 0; }
-  console.log('📡 API devolvió', data.response.length, 'partidos de fase de grupos');
+  console.log('📡 API devolvió', data.response.length, 'partidos en total del Mundial');
+  // Diagnóstico: mostrar el primer partido para ver nombres y formato reales
+  if(data.response.length>0){
+    const f0 = data.response[0];
+    console.log('🔍 Ejemplo de partido de la API:', f0.teams.home.name, 'vs', f0.teams.away.name, '| ronda:', f0.league.round, '| estado:', f0.fixture.status.short, '| goles:', f0.goals.home, '-', f0.goals.away);
+  }
   let cambios = false;
   let actualizados = 0;
   data.response.forEach(fix => {
@@ -2528,6 +2533,11 @@ function renderizarEliminatorias(){
   const cont=document.getElementById('eliminatoriasContenido');
   const terminados=partidos.filter(p=>p.estado==='finished').length;
   const total=partidos.length;
+  // Proteger contra koPartidos.r32 indefinido
+  if(!koPartidos || !Array.isArray(koPartidos.r32)){
+    if(!koPartidos) koPartidos = {};
+    koPartidos.r32 = [];
+  }
   const r32Poblado=koPartidos.r32.some(m=>m.local);
   let statusHtml='';
   if(!r32Poblado){
@@ -3975,8 +3985,9 @@ async function admRecargarPartidosOficiales(){
   try{
     // Resetear los partidos a los oficiales del código (PARTIDOS_INICIAL)
     partidos = JSON.parse(JSON.stringify(PARTIDOS_INICIAL));
-    // Resetear también la fase eliminatoria (depende de los grupos)
-    if(typeof poblarR32==='function'){ try{ koPartidos = {}; poblarR32(); }catch(e){ koPartidos = koPartidos||{}; } }
+    // Resetear la fase eliminatoria con su estructura correcta (vacía, aún no hay clasificados)
+    if(typeof crearKO==='function'){ koPartidos = crearKO(); }
+    else { koPartidos = {r32:[]}; }
     totalGoles = 0;
     // Guardar en Firebase (sobrescribe los viejos)
     await db.collection('partidos').doc('estado').set({
