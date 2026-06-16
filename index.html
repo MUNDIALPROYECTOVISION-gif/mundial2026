@@ -1154,7 +1154,7 @@ const FB_OK = true;
 // ════ VERSIÓN DE LA APP ════
 // Sube este número cada vez que publiques una nueva versión en GitHub.
 // La app compara con la versión guardada en Firebase; si está vieja, obliga a recargar.
-const APP_VERSION = 18;
+const APP_VERSION = 19;
 console.log('🔥 Firebase conectado:', firebaseConfig.projectId);
 
 // ════ CONTROL DE VERSIÓN ════
@@ -2100,6 +2100,25 @@ async function probarAPI(){
       pintarPanelAPI();
       mostrarApiBadge('ok',`✅ Conectado · ${rem} restantes`);
       toast('✅ ¡API conectada correctamente!');
+      // DIAGNÓSTICO: ¿el plan cubre el Mundial 2026?
+      console.log('🔍 DIAGNÓSTICO API — Plan:', plan, '| Peticiones restantes:', rem);
+      try{
+        const liga = await llamarAPI(`/leagues?id=${WC_LEAGUE}&season=${WC_SEASON}`);
+        if(liga.response && liga.response.length>0){
+          const cov = liga.response[0].seasons?.[0]?.coverage;
+          console.log('🔍 Cobertura del Mundial 2026 en tu plan:', cov);
+          console.log('🔍 ¿Cubre fixtures (partidos)?', cov?.fixtures);
+          const fix = await llamarAPI(`/fixtures?league=${WC_LEAGUE}&season=${WC_SEASON}`);
+          console.log('🔍 Partidos del Mundial que devuelve tu plan:', fix.results, '(de 104 posibles)');
+          if(fix.results===0){
+            console.warn('⚠️ TU PLAN NO INCLUYE LOS PARTIDOS DEL MUNDIAL 2026. El plan gratis suele cubrir solo temporadas viejas (2021-2023). Para marcadores automáticos del Mundial necesitas un plan de pago, o marca los resultados a mano.');
+            toast('⚠️ Tu plan gratis no incluye el Mundial. Revisa la consola.','warn');
+          }
+        } else {
+          console.warn('⚠️ La liga del Mundial (id=1, temporada 2026) NO está disponible en tu plan. Esto confirma que el plan gratis no la cubre.');
+          toast('⚠️ El Mundial no está en tu plan. Revisa la consola.','warn');
+        }
+      }catch(diagErr){ console.error('Error en diagnóstico de cobertura:', diagErr); }
     } else {
       throw new Error('Respuesta inesperada');
     }
